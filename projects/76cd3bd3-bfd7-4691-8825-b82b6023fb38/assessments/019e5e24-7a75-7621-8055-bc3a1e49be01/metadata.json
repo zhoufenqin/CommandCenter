@@ -14,7 +14,10 @@
       "job_id": "8765864-1244187760-df803d2c-76ea-4a2a-9877-7e802079310a"
     },
     "19e6a49c-3ca4-40cb-802d-155d42b49c96": {
-      "status": "running"
+      "status": "running",
+      "pull_request": "https://github.com/zhoufenqin/PhotoAlbum-java/pull/5",
+      "session_url": "https://github.com/zhoufenqin/PhotoAlbum-java/pull/5/agent-sessions/acc175e6-3c4c-4969-a4c6-ddadfe3ed1a6",
+      "job_id": "8765864-1112811296-9b31d2ea-e607-487b-8759-22e4843cc8f3"
     }
   }
 }
