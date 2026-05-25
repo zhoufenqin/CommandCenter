@@ -1,0 +1,26 @@
+analysisCoverage: full
+java:
+  assessmentDomains:
+  - java-upgrade
+  - cloud-readiness
+  analysisCoverage: issue-only
+  targetRuntime: openjdk25
+  targetComputeServices:
+  - azure-appservice
+  - azure-aks
+  - azure-container-apps
+  targetOS:
+  - linux
+  enableContainerization: true
+  minimumCveSeverity: high
+dotnet:
+  assessmentDomains:
+  - dotnet-upgrade
+  - cloud-readiness
+  analysisCoverage: issue-only
+  targetRuntime: net9.0
+  targetComputeServices:
+  - Any
+  targetOS: []
+  enableContainerization: false
+  minimumCveSeverity: high
