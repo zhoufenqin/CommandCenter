@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Assessment - ZavaAccountManager</title>
+<style>
+:root {
+  --bg-primary: #ffffff;
+  --bg-card: #f8f9fa;
+  --bg-page: #f0f1f3;
+  --text-primary: #24292f;
+  --text-secondary: #57606a;
+  --text-muted: #6b7280;
+  --border-color: #d0d7de;
+  --border-light: #e1e4e8;
+  --link-color: #2563eb;
+  --color-mandatory: #E3008C;
+  --color-potential: #637CEF;
+  --color-optional: #A19F9D;
+  --font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  --font-mono: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-family); font-size: 13px; color: var(--text-primary); background: var(--bg-primary); line-height: 1.5; margin: 0; padding: 0; }
+a { color: var(--link-color); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Page layout ───────────────────────────────────────────── */
+.main { margin: 0; padding: 24px 32px; background: var(--bg-primary); }
+.back-link { color: var(--text-muted); font-size: 13px; margin-bottom: 16px; display: block; }
+h1 { font-weight: 600; font-size: 20px; color: var(--text-primary); margin-bottom: 20px; }
+
+/* ── Report cards (matches VS Code .vscode-report-card) ──── */
+.report-card { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 4px; padding: 12px; margin-bottom: 20px; }
+.report-card h2 { font-size: 14px; font-weight: 600; margin: 0; color: var(--text-primary); }
+.report-card-body { margin-top: 16px; }
+
+/* ── Application Information (two-column) ────────────────── */
+.app-info-container { display: flex; gap: 8px; flex-wrap: wrap; }
+.app-info-column { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 8px; }
+.app-info-row { display: flex; align-items: baseline; }
+.app-info-label { width: 136px; flex-shrink: 0; font-weight: 600; color: var(--text-primary); }
+.app-info-value { flex: 1; color: var(--text-primary); }
+
+/* ── Issue Summary (pie charts + legend) ─────────────────── */
+.cards-container { display: flex; align-items: stretch; gap: 20px; flex-wrap: wrap; }
+.issue-summary-card { flex: 2; }
+.domain-summary-container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-around; }
+.domain-summary-item { flex: 1; min-width: 120px; text-align: center; padding: 0 16px; border-right: 1px solid var(--border-light); }
+.domain-summary-item:last-child { border-right: none; }
+.domain-summary-item h3 { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-top: 8px; }
+.domain-summary-item .count { font-size: 12px; color: var(--text-secondary); }
+.criticality-legend { display: flex; flex-wrap: wrap; gap: 15px; padding-top: 12px; justify-content: center; }
+.criticality-legend .legend-item { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-secondary); }
+.legend-swatch { display: inline-block; width: 1em; height: 1em; border-radius: 2px; }
+
+/* ── Issue list tables ───────────────────────────────────── */
+.issue-section { margin-top: 20px; }
+.issue-section h2 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+.issue-table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 600px; }
+.issue-table th { text-align: left; text-transform: uppercase; font-weight: 600; font-size: calc(13px * 0.875); padding: 6px 8px; background: var(--bg-card); border-bottom: 1px solid var(--border-color); color: var(--text-secondary); position: sticky; top: 0; z-index: 1; }
+.issue-table td { padding: 12px 8px; border-bottom: 1px solid var(--border-light); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
+.col-issue { width: 55%; }
+.col-criticality { width: 25%; }
+.col-storypoint { width: 20%; }
+
+/* ── Target dropdown ─────────────────────────────────────── */
+.target-select-container { margin: 4px 0 16px 0; display: flex; align-items: center; gap: 8px; }
+.target-select-container label { font-weight: 600; color: var(--text-primary); font-size: 14px; }
+.target-select-container select { font-family: var(--font-family); font-size: 13px; padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); cursor: pointer; }
+
+/* ── Filter bar ──────────────────────────────────────────── */
+.filter-bar { display: flex; flex-wrap: wrap; gap: 16px; margin: 16px 0 8px 0; align-items: center; }
+.multi-select { position: relative; display: inline-block; min-width: 140px; }
+.multi-select-btn { font-family: var(--font-family); font-size: 13px; padding: 4px 24px 4px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); cursor: pointer; width: 100%; text-align: left; position: relative; white-space: nowrap; }
+.multi-select-btn::after { content: '\25BE'; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 11px; color: var(--text-secondary); }
+.multi-select-dropdown { display: none; position: absolute; top: 100%; left: 0; min-width: 100%; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; margin-top: 2px; }
+.multi-select.open .multi-select-dropdown { display: block; }
+.multi-select-option { display: flex; align-items: center; gap: 6px; padding: 5px 10px; cursor: pointer; font-size: 13px; white-space: nowrap; }
+.multi-select-option:hover { background: var(--bg-secondary); }
+.multi-select-option input[type=checkbox] { margin: 0; cursor: pointer; }
+.clear-filters { font-size: 12px; color: var(--link-color); cursor: pointer; margin-left: 4px; }
+
+/* ── Criticality labels (colored square + text) ──────────── */
+.crit-label { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; white-space: nowrap; }
+.crit-square { display: inline-block; width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.crit-square-mandatory { background: var(--color-mandatory); }
+.crit-square-potential { background: var(--color-potential); }
+.crit-square-optional { background: var(--color-optional); }
+
+/* ── Expandable rows ─────────────────────────────────────── */
+.expand-btn { background: none; border: none; cursor: pointer; width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 11px; transition: transform 0.15s; padding: 0; vertical-align: middle; flex-shrink: 0; }
+.expand-btn.open { transform: rotate(90deg); }
+.issue-title-cell { display: flex; align-items: center; gap: 4px; }
+.detail-row td { padding: 0; border-bottom: 1px solid var(--border-light); white-space: normal; overflow: visible; text-overflow: clip; }
+.detail-content { display: flex; gap: 0; padding: 8px 8px 8px 32px; min-width: 0; }
+.file-list { flex: 0 0 50%; min-width: 0; overflow: hidden; }
+.file-list table { width: 100%; border-collapse: collapse; }
+.file-list th { font-size: calc(13px * 0.875); text-transform: uppercase; font-weight: 600; color: var(--text-secondary); padding: 6px 8px; border-bottom: 1px solid var(--border-color); text-align: left; height: 32px; }
+.file-list td { font-size: 13px; padding: 6px 8px; border-bottom: 1px solid var(--border-light); color: var(--text-primary); }
+.file-list .file-path { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 300px; display: block; }
+.file-list .position { font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); }
+.explanation-panel { flex: 1; padding-left: 16px; min-width: 0; overflow-wrap: break-word; word-wrap: break-word; }
+.explanation-panel h4 { font-size: calc(13px * 0.875); text-transform: uppercase; font-weight: 600; color: var(--text-secondary); padding: 6px 0; border-bottom: 1px solid var(--border-color); height: 32px; margin: 0; }
+.explanation-panel p { font-size: 13px; padding: 8px 0; color: var(--text-primary); line-height: 1.6; white-space: normal; word-break: break-word; }
+
+/* ── Experimental badge ──────────────────────────────────── */
+.badge-experimental { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; background: #fef9c3; color: #854d0e; vertical-align: middle; margin-left: 8px; cursor: default; }
+
+/* ── Footer ──────────────────────────────────────────────── */
+.footer { text-align: center; margin-top: 24px; color: var(--text-muted); font-size: 13px; }
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 800px) {
+  .main { padding: 16px; }
+  .app-info-container { flex-direction: column; }
+  .domain-summary-container { flex-direction: column; }
+  .domain-summary-item { border-right: none; border-bottom: 1px solid var(--border-light); padding-bottom: 12px; }
+  .detail-content { flex-direction: column; }
+  .file-list { flex: none; width: 100%; }
+  .explanation-panel { padding-left: 0; padding-top: 8px; }
+}
+/* ── Tab navigation ──────────────────────────────────────── */
+.tab-nav { display: flex; gap: 0; border-bottom: 1px solid var(--border-color); margin-bottom: 28px; flex-wrap: wrap; }
+.tab-btn { background: none; border: none; border-bottom: 2px solid transparent; padding: 10px 18px; font-size: 13px; font-family: var(--font-family); color: var(--text-secondary); cursor: pointer; margin-bottom: -1px; white-space: nowrap; position: relative; }
+.tab-btn:hover { color: var(--text-primary); }
+.tab-btn.active { color: var(--link-color); border-bottom-color: var(--link-color); font-weight: 600; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── Tooltip on tab ──────────────────────────────────────── */
+.tab-btn[data-tooltip]::after { content: attr(data-tooltip); position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: #24292f; color: #ffffff; font-size: 12px; font-weight: 400; padding: 6px 10px; border-radius: 4px; white-space: normal; width: max-content; max-width: 260px; text-align: center; pointer-events: none; opacity: 0; transition: opacity 0.15s; z-index: 100; }
+.tab-btn[data-tooltip]:hover::after { opacity: 1; }
+
+/* ── Fact content — prose column ─────────────────────────── */
+.fact-content { max-width: 860px; margin: 0 auto; line-height: 1.75; color: var(--text-primary); font-size: 14px; }
+.fact-content h1 { font-size: 22px; font-weight: 700; margin: 0 0 6px 0; color: var(--text-primary); letter-spacing: -0.01em; }
+.fact-content h1 + p { margin-top: 6px; color: var(--text-secondary); font-size: 14px; margin-bottom: 24px; }
+.fact-content h2 { font-size: 17px; font-weight: 700; margin: 36px 0 12px 0; padding-bottom: 6px; border-bottom: 1px solid var(--border-color); color: var(--text-primary); letter-spacing: -0.01em; }
+.fact-content h3 { font-size: 14px; font-weight: 700; margin: 24px 0 8px 0; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.04em; font-size: 12px; color: var(--text-secondary); }
+.fact-content p { margin: 10px 0; color: var(--text-primary); }
+.fact-content ul, .fact-content ol { margin: 10px 0 10px 22px; }
+.fact-content li { margin: 5px 0; }
+.fact-content a { color: var(--link-color); }
+.fact-content a:hover { text-decoration: underline; }
+
+/* ── Fact tables ─────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; margin: 16px 0; }
+.fact-content table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 13px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color); }
+.fact-content thead { background: var(--bg-card); }
+.fact-content th { text-align: left; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; padding: 8px 14px; border-bottom: 1px solid var(--border-color); color: var(--text-secondary); }
+.fact-content td { padding: 9px 14px; border-bottom: 1px solid var(--border-light); vertical-align: top; color: var(--text-primary); }
+.fact-content tr:last-child td { border-bottom: none; }
+.fact-content tbody tr:hover { background: #f6f8fa; }
+
+/* ── Fact code ───────────────────────────────────────────── */
+.fact-content code { font-family: var(--font-mono); font-size: 12px; background: #f0f1f3; padding: 2px 6px; border-radius: 4px; color: #c7254e; }
+.fact-content pre { background: #f6f8fa; border: 1px solid var(--border-light); border-radius: 6px; padding: 14px 16px; overflow-x: auto; margin: 14px 0; }
+.fact-content pre code { background: none; color: var(--text-primary); padding: 0; border-radius: 0; }
+.fact-content hr { border: none; border-top: 1px solid var(--border-light); margin: 28px 0; }
+.fact-content strong { font-weight: 600; }
+.fact-content em { font-style: italic; }
+.fact-content blockquote { border-left: 3px solid var(--border-color); margin: 12px 0; padding: 4px 16px; color: var(--text-secondary); }
+.fact-unavailable { padding: 32px 0; }
+.fact-unavailable h3 { font-size: 16px; font-weight: 600; color: var(--text-primary); text-transform: none; letter-spacing: 0; margin: 0 0 12px 0; }
+.fact-unavailable p { margin: 0 0 8px 0; color: var(--text-secondary); }
+.fact-unavailable ol, .fact-unavailable ul { margin: 0 0 0 22px; color: var(--text-primary); }
+.fact-unavailable li { margin: 6px 0; }
+
+/* ── Mermaid diagram card ─────────────────────────────────── */
+.mermaid { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 8px; padding: 24px 16px; margin: 20px 0; overflow-x: auto; text-align: center; cursor: pointer; position: relative; }
+.mermaid:hover { border-color: var(--border-color); }
+.mermaid svg { max-width: 100%; height: auto !important; display: inline-block; }
+.mermaid-zoom-hint { position: absolute; top: 8px; right: 10px; font-size: 11px; color: var(--text-muted); opacity: 0; transition: opacity 0.15s; pointer-events: none; }
+.mermaid:hover .mermaid-zoom-hint { opacity: 1; }
+
+/* ── Diagram lightbox ────────────────────────────────────── */
+.diagram-lightbox { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.7); backdrop-filter: blur(2px); align-items: center; justify-content: center; cursor: zoom-out; padding: 48px 32px; }
+.diagram-lightbox.open { display: flex; }
+.diagram-lightbox-inner { background: #ffffff; border-radius: 10px; padding: 32px; width: 88vw; max-height: 88vh; overflow: hidden; cursor: default; box-shadow: 0 24px 64px rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; }
+.diagram-lightbox-inner svg { width: 100% !important; height: auto !important; max-height: 76vh; display: block; }
+.diagram-lightbox-close { position: fixed; top: 20px; right: 24px; background: #ffffff; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.2); z-index: 1001; }
+.diagram-lightbox-close:hover { background: var(--bg-card); }
+.diagram-lightbox-hint { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.55); color: #ffffff; font-size: 12px; padding: 6px 14px; border-radius: 20px; pointer-events: none; white-space: nowrap; z-index: 1001; }
+</style>
+<script>
+window.__mermaidPending = [];
+window.__mermaidReady = false;
+window.__renderMermaidIn = function(container) {
+  // Until the real implementation overrides this (after the ES module import
+  // resolves), just queue the container so we can render it later.
+  if (container) { window.__mermaidPending.push(container); }
+};
+</script>
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({ startOnLoad: false, theme: 'default', flowchart: { useMaxWidth: true }, sequence: { useMaxWidth: true } });
+
+// Real implementation: actually run mermaid on the unprocessed diagrams in the
+// given container (only ones not already rendered). Adds a "Click to expand"
+// hint span after each successful render so the lightbox affordance is
+// discoverable.
+window.__renderMermaidIn = function(container) {
+  var nodes = container ? container.querySelectorAll('.mermaid:not([data-processed])') : [];
+  if (nodes.length > 0) {
+    mermaid.run({ nodes: Array.from(nodes) }).then(function() {
+      nodes.forEach(function(node) {
+        if (!node.querySelector('.mermaid-zoom-hint')) {
+          var hint = document.createElement('span');
+          hint.className = 'mermaid-zoom-hint';
+          hint.textContent = 'Click to expand';
+          node.appendChild(hint);
+        }
+      });
+    });
+  }
+};
+
+// Drain any containers that were queued by the shim while mermaid was loading.
+// Use a Set to dedupe in case a container was both queued and is also the
+// initial-active panel below.
+var drained = new Set();
+(window.__mermaidPending || []).forEach(function(c) {
+  if (!drained.has(c)) { drained.add(c); window.__renderMermaidIn(c); }
+});
+window.__mermaidPending = [];
+window.__mermaidReady = true;
+
+// Render diagrams visible on initial load (the active tab panel(s) may not have
+// been queued by anyone — DOMContentLoaded handlers run before this if the
+// module is cached, after this if it's not, so handle both cases here).
+function renderActivePanels() {
+  document.querySelectorAll('.tab-panel.active').forEach(function(p) {
+    if (!drained.has(p)) { drained.add(p); window.__renderMermaidIn(p); }
+  });
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', renderActivePanels);
+} else {
+  renderActivePanels();
+}
+</script>
+</head><body>
+<div id="diagram-lightbox" class="diagram-lightbox" role="dialog" aria-modal="true">
+  <button class="diagram-lightbox-close" id="diagram-lightbox-close" aria-label="Close">&#x2715;</button>
+  <div class="diagram-lightbox-hint">Scroll to zoom &nbsp;·&nbsp; Drag to pan &nbsp;·&nbsp; Double-click to reset</div>
+  <div class="diagram-lightbox-inner" id="diagram-lightbox-inner"></div>
+</div>
+<div class="main">
+<a class="back-link" href="../../index.html">&#8592; Back to aggregate dashboard</a>
+<h1>ZavaAccountManager</h1>
+<div class="report-card">
+  <h2>Application Information</h2>
+  <div class="report-card-body">
+    <div class="app-info-container">
+      <div class="app-info-column">
+        <div class="app-info-row"><span class="app-info-label">Application Name</span><span class="app-info-value">ZavaAccountManager</span></div>
+        <div class="app-info-row"><span class="app-info-label">Effort</span><span class="app-info-value" id="effort-display">S (total story points: 13)</span></div>
+      </div>
+      <div class="app-info-column">
+        <div class="app-info-row"><span class="app-info-label">Build Tools</span><span class="app-info-value">MSBuild</span></div>
+        <div class="app-info-row"><span class="app-info-label">Frameworks</span><span class="app-info-value">.NETFramework,Version=v4.8</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="tab-issues" data-tooltip="Issues detected in the source code">Issues</button>
+  <button class="tab-btn" data-tab="tab-arch" data-tooltip="How the app&#39;s layers connect — from UI to data.">Architecture</button>
+  <button class="tab-btn" data-tab="tab-api" data-tooltip="Endpoints exposed by this app and how services communicate.">API Contracts</button>
+  <button class="tab-btn" data-tab="tab-config" data-tooltip="Environment settings, runtime profiles, and deployment manifests.">Configuration</button>
+  <button class="tab-btn" data-tab="tab-workflows" data-tooltip="Domain entities and the core flows users move through.">Business Workflows</button>
+  <button class="tab-btn" data-tab="tab-deps" data-tooltip="Libraries and frameworks this app depends on, grouped by category.">Dependencies</button>
+  <button class="tab-btn" data-tab="tab-data" data-tooltip="Database schema, entity relationships, and persistence behavior.">Data Model</button>
+</nav>
+<div id="tab-issues" class="tab-panel active">
+<div class="target-select-container">
+  <label for="target-select">Target Compute Service:</label>
+  <select id="target-select" onchange="onTargetChange(this.value)">
+    <option value="AppService.Windows">Azure App Service</option>
+  </select>
+</div>
+<div class="report-card">
+  <h2>Issue Summary</h2>
+  <div class="report-card-body">
+    <div class="domain-summary-container" id="donut-container">
+      <div class="domain-summary-item">
+<svg viewBox="0 0 100 100" width="100" height="100" style="display:block;margin:0 auto;transform:rotate(-90deg);">
+  <circle cx="50" cy="50" r="35" fill="none" stroke="var(--color-potential)" stroke-width="15" stroke-dasharray="130.45 219.91" stroke-dashoffset="-0.00"/>
+  <circle cx="50" cy="50" r="35" fill="none" stroke="var(--color-optional)" stroke-width="15" stroke-dasharray="86.46 219.91" stroke-dashoffset="-131.95"/>
+</svg>
+
+        <h3>Cloud Readiness</h3>
+        <div class="count">5 issues</div>
+      </div>
+      <div class="domain-summary-item">
+<svg viewBox="0 0 100 100" width="100" height="100" style="display:block;margin:0 auto;transform:rotate(-90deg);">
+  <circle cx="50" cy="50" r="35" fill="none" stroke="var(--color-mandatory)" stroke-width="15" stroke-dasharray="181.76 219.91" stroke-dashoffset="-0.00"/>
+  <circle cx="50" cy="50" r="35" fill="none" stroke="var(--color-potential)" stroke-width="15" stroke-dasharray="35.15 219.91" stroke-dashoffset="-183.26"/>
+</svg>
+
+        <h3>DotNET Upgrade</h3>
+        <div class="count">6 issues</div>
+      </div>
+    </div>
+    <div class="criticality-legend">
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--color-mandatory)"></span>Mandatory</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--color-potential)"></span>Potential</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--color-optional)"></span>Optional</div>
+    </div>
+  </div>
+</div>
+<div class="filter-bar" id="filter-bar">
+  <div class="multi-select" id="domain-ms">
+    <button class="multi-select-btn" onclick="toggleMultiSelect('domain-ms')">Domain</button>
+    <div class="multi-select-dropdown">
+      <label class="multi-select-option"><input type="checkbox" value="cloud-readiness" onchange="onMultiSelectChange('domain-ms','Domain')"/> Cloud Readiness</label>
+      <label class="multi-select-option"><input type="checkbox" value="dotnet-upgrade" onchange="onMultiSelectChange('domain-ms','Domain')"/> DotNET Upgrade</label>
+    </div>
+  </div>
+  <div class="multi-select" id="criticality-ms">
+    <button class="multi-select-btn" onclick="toggleMultiSelect('criticality-ms')">Criticality</button>
+    <div class="multi-select-dropdown">
+      <label class="multi-select-option"><input type="checkbox" value="potential" onchange="onMultiSelectChange('criticality-ms','Criticality')"/> Potential</label>
+      <label class="multi-select-option"><input type="checkbox" value="optional" onchange="onMultiSelectChange('criticality-ms','Criticality')"/> Optional</label>
+    </div>
+  </div>
+  <a class="clear-filters" href="javascript:void(0)" onclick="clearAllFilters()">Clear all</a>
+</div>
+<div class="issue-section" data-domain="cloud-readiness">
+  <h2>Cloud Readiness</h2>
+  <table class="issue-table">
+    <colgroup><col class="col-issue"/><col class="col-criticality"/><col class="col-storypoint"/></colgroup>
+    <thead><tr><th>Issue Category</th><th>Criticality</th><th>Story Point</th></tr></thead>
+    <tbody>
+    <tr class="issue-row" data-criticality="potential" data-targets='{"AppService.Windows":{"effort":3,"severity":"potential"},"AppService.Linux":{"effort":3,"severity":"potential"},"AKS.Linux":{"effort":3,"severity":"potential"},"AKS.Windows":{"effort":3,"severity":"potential"},"ACA":{"effort":3,"severity":"potential"},"AppServiceContainer.Linux":{"effort":3,"severity":"potential"},"AppServiceContainer.Windows":{"effort":3,"severity":"potential"},"AppServiceManagedInstance.Windows":{"effort":3,"severity":"potential"}}' data-default-effort="3" data-default-severity="potential" data-rule="HTTP.0001" onclick="toggleRow('row-cloudreadiness-0', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-cloudreadiness-0">&#x276F;</button> Access to external resources via HTTP is detected</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-potential"></span>Potential</span></td>
+      <td class="sp-cell">3</td>
+    </tr>
+    <tr class="detail-row" id="row-cloudreadiness-0" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="file-list">
+            <table><colgroup><col style="width:70%"/><col style="width:30%"/></colgroup>
+            <thead><tr><th>File</th><th>Position</th></tr></thead><tbody>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 4301</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 4316</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 5031</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 5046</span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>Your application is trying to reach external resources via HTTP protocol.</p><p>For Managed Instance on App Service, secure connectivity to internal/on-prem HTTP services is managed via plan-level VNet integration and private endpoints. Keep inbound traffic restricted to 80/443; capture any required HTTP config in install scripts. Use Bastion JIT RDP only for diagnostics—persist all changes via install scripts. Outbound traffic does not impose similar restrictions.</p><p>While if targeting other Azure compute services, ensure the resources it is trying to reach are accessible from the Azure environment. If those HTTP requests are sent to internal services or services hosted on-prem, you probably will need to migrate those services to Azure as well.</p><p>Also, keep in mind that Azure App Service supports port 80 for HTTP and port 443 for HTTPS traffic. If you are using any other ports, you need to update them before moving to Azure.</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr class="issue-row" data-criticality="potential" data-targets='{"AppService.Windows":{"effort":1,"severity":"potential"},"AppService.Linux":{"effort":1,"severity":"potential"},"AKS.Linux":{"effort":1,"severity":"potential"},"AKS.Windows":{"effort":1,"severity":"potential"},"ACA":{"effort":1,"severity":"potential"},"AppServiceContainer.Linux":{"effort":1,"severity":"potential"},"AppServiceContainer.Windows":{"effort":1,"severity":"potential"},"AppServiceManagedInstance.Windows":{"effort":1,"severity":"potential"}}' data-default-effort="1" data-default-severity="potential" data-rule="Local.0006" onclick="toggleRow('row-cloudreadiness-1', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-cloudreadiness-1">&#x276F;</button> Hardcoded URLs detected</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-potential"></span>Potential</span></td>
+      <td class="sp-cell">1</td>
+    </tr>
+    <tr class="detail-row" id="row-cloudreadiness-1" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="file-list">
+            <table><colgroup><col style="width:70%"/><col style="width:30%"/></colgroup>
+            <thead><tr><th>File</th><th>Position</th></tr></thead><tbody>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 4386</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 5116</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Login.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Login.aspx.cs</span></td><td><span class="position">Line 0, Col 472</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Logout.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Logout.aspx.cs</span></td><td><span class="position">Line 0, Col 306</span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>Your application has hardcoded URLs that might correspond to services that are not accessible on Azure.</p><p>Review and ensure that the application is attempting to access URLs that would be available from Azure. You might need to migrate those services to Azure too, this way you will get the benefit of lower latency in the cloud.</p><p>If your application needs to depend on services that run on-premises, you can connect your Azure and local networks with ExpressRoute, Hybrid Connections, or VPN solutions.</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr class="issue-row" data-criticality="potential" data-targets='{"AppService.Windows":{"effort":3,"severity":"potential"},"AppService.Linux":{"effort":3,"severity":"potential"},"AKS.Linux":{"effort":3,"severity":"potential"},"AKS.Windows":{"effort":3,"severity":"potential"},"ACA":{"effort":3,"severity":"potential"},"AppServiceContainer.Linux":{"effort":3,"severity":"potential"},"AppServiceContainer.Windows":{"effort":3,"severity":"potential"},"AppServiceManagedInstance.Windows":{"effort":3,"severity":"potential"}}' data-default-effort="3" data-default-severity="potential" data-rule="Database.0002" onclick="toggleRow('row-cloudreadiness-2', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-cloudreadiness-2">&#x276F;</button> SQL database connection detected</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-potential"></span>Potential</span></td>
+      <td class="sp-cell">3</td>
+    </tr>
+    <tr class="detail-row" id="row-cloudreadiness-2" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="file-list">
+            <table><colgroup><col style="width:70%"/><col style="width:30%"/></colgroup>
+            <thead><tr><th>File</th><th>Position</th></tr></thead><tbody>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\web.config">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\web.config</span></td><td><span class="position"></span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>SQL database connection detected.</p><p>Ensure the database is available/reachable on Azure.</p><p>If it is not, there are multiple ways you can move your data to Azure:<br/>    1. Migrate to Azure SQL Database.<br/>    2. Consider Azure SQL Managed Instance if you need features that are not available in Azure SQL Database and you don’t want to use a VM.<br/>    3. Migrate your database servers directly to SQL Server on Azure VMs.</p><p>To assess database migration effort, you can use Azure Migrate tool, see the link below.</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr class="issue-row" data-criticality="optional" data-targets='{"AppService.Windows":{"effort":3,"severity":"optional"},"AppService.Linux":{"effort":3,"severity":"optional"},"AKS.Linux":{"effort":3,"severity":"optional"},"AKS.Windows":{"effort":3,"severity":"optional"},"ACA":{"effort":3,"severity":"optional"},"AppServiceContainer.Linux":{"effort":3,"severity":"optional"},"AppServiceContainer.Windows":{"effort":3,"severity":"optional"},"AppServiceManagedInstance.Windows":{"effort":3,"severity":"optional"}}' data-default-effort="3" data-default-severity="optional" data-rule="Database.0003" onclick="toggleRow('row-cloudreadiness-3', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-cloudreadiness-3">&#x276F;</button> System.Data.SqlClient dependency detected</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-optional"></span>Optional</span></td>
+      <td class="sp-cell">3</td>
+    </tr>
+    <tr class="detail-row" id="row-cloudreadiness-3" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="file-list">
+            <table><colgroup><col style="width:70%"/><col style="width:30%"/></colgroup>
+            <thead><tr><th>File</th><th>Position</th></tr></thead><tbody>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3156</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3166</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 4020</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 4030</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 6101</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 6111</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3597</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3607</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 2179</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 2189</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3326</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3336</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3800</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3810</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 2924</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 2934</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 5807</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 5817</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 1185</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 1195</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 2280</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 2292</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3427</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3439</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3901</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3913</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3025</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3037</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 5908</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 5920</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 1286</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\Default.aspx.cs</span></td><td><span class="position">Line 0, Col 1298</span></td></tr>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\web.config">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\web.config</span></td><td><span class="position"></span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>System.Data.SqlClient dependency is detected.</p><p>While System.Data.SqlClient will work in Azure, the newer Microsoft.Data.SqlClient package is the primary .NET SQL client moving forward and receiving the latest features. For example, Microsoft.Data.SqlClient easily allows use of Azure Managed Identity from a connection string.</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr class="issue-row" data-criticality="optional" data-targets='{"AppService.Windows":{"effort":3,"severity":"optional"},"AppService.Linux":{"effort":3,"severity":"optional"},"AKS.Linux":{"effort":3,"severity":"optional"},"AKS.Windows":{"effort":3,"severity":"optional"},"ACA":{"effort":3,"severity":"optional"},"AppServiceContainer.Linux":{"effort":3,"severity":"optional"},"AppServiceContainer.Windows":{"effort":3,"severity":"optional"},"AppServiceManagedInstance.Windows":{"effort":3,"severity":"optional"}}' data-default-effort="3" data-default-severity="optional" data-rule="Security.0002" onclick="toggleRow('row-cloudreadiness-4', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-cloudreadiness-4">&#x276F;</button> Connection strings without configuration builders detected</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-optional"></span>Optional</span></td>
+      <td class="sp-cell">3</td>
+    </tr>
+    <tr class="detail-row" id="row-cloudreadiness-4" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="file-list">
+            <table><colgroup><col style="width:70%"/><col style="width:30%"/></colgroup>
+            <thead><tr><th>File</th><th>Position</th></tr></thead><tbody>
+            <tr><td><span class="file-path" title="modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\web.config">modernize-cc-assess\019e5df8-5965-7c09-8ade-12818710a073\repos\ZavaAccountManager\web.config</span></td><td><span class="position"></span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>Connection strings without configuration builders detected.  </p><p> Keeping connection strings directly in the app is not the best practice and might introduce security risks, increased maintenance, scalability challenges or compliance standards (such as PCI DSS, GDPR, etc.). </p><p> Instead, it is recommended to use configuration builders to get secrets from secure sources in Azure environment.</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+<div class="issue-section" data-domain="dotnet-upgrade">
+  <h2>DotNET Upgrade</h2>
+  <table class="issue-table">
+    <colgroup><col class="col-issue"/><col class="col-criticality"/><col class="col-storypoint"/></colgroup>
+    <thead><tr><th>Issue Category</th><th>Criticality</th><th>Story Point</th></tr></thead>
+    <tbody>
+    <tr class="issue-row" data-criticality="mandatory" data-targets='{}' data-default-effort="1" data-default-severity="mandatory" data-rule="Api.0001" onclick="toggleRow('row-dotnetupgrade-0', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-dotnetupgrade-0">&#x276F;</button> Binary incompatible for selected .NET version</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-mandatory"></span>Mandatory</span></td>
+      <td class="sp-cell">1</td>
+    </tr>
+    <tr class="detail-row" id="row-dotnetupgrade-0" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="file-list">
+            <table><colgroup><col style="width:70%"/><col style="width:30%"/></colgroup>
+            <thead><tr><th>File</th><th>Position</th></tr></thead><tbody>
+            <tr><td><span class="file-path" title="Site.Master.designer.cs">Site.Master.designer.cs</span></td><td><span class="position">Line 0, Col 430</span></td></tr>
+            <tr><td><span class="file-path" title="Site.Master.designer.cs">Site.Master.designer.cs</span></td><td><span class="position">Line 0, Col 353</span></td></tr>
+            <tr><td><span class="file-path" title="Site.Master.designer.cs">Site.Master.designer.cs</span></td><td><span class="position">Line 0, Col 293</span></td></tr>
+            <tr><td><span class="file-path" title="Site.Master.designer.cs">Site.Master.designer.cs</span></td><td><span class="position">Line 0, Col 230</span></td></tr>
+            <tr><td><span class="file-path" title="Site.Master.designer.cs">Site.Master.designer.cs</span></td><td><span class="position">Line 0, Col 168</span></td></tr>
+            <tr><td><span class="file-path" title="Site.Master.designer.cs">Site.Master.designer.cs</span></td><td><span class="position">Line 0, Col 107</span></td></tr>
+            <tr><td><span class="file-path" title="Site.Master.cs">Site.Master.cs</span></td><td><span class="position">Line 0, Col 372</span></td></tr>
+            <tr><td><span class="file-path" title="Site.Master.cs">Site.Master.cs</span></td><td><span class="position">Line 0, Col 337</span></td></tr>
+            <tr><td><span class="file-path" title="Site.Master.cs">Site.Master.cs</span></td><td><span class="position">Line 0, Col 308</span></td></tr>
+            <tr><td><span class="file-path" title="Site.Master.cs">Site.Master.cs</span></td><td><span class="position">Line 0, Col 248</span></td></tr>
+            <tr><td><span class="file-path" title="Site.Master.cs">Site.Master.cs</span></td><td><span class="position">Line 0, Col 157</span></td></tr>
+            <tr><td><span class="file-path" title="Site.Master.cs">Site.Master.cs</span></td><td><span class="position">Line 0, Col 94</span></td></tr>
+            <tr><td><span class="file-path" title="Logout.aspx.cs">Logout.aspx.cs</span></td><td><span class="position">Line 0, Col 349</span></td></tr>
+            <tr><td><span class="file-path" title="Logout.aspx.cs">Logout.aspx.cs</span></td><td><span class="position">Line 0, Col 230</span></td></tr>
+            <tr><td><span class="file-path" title="Logout.aspx.cs">Logout.aspx.cs</span></td><td><span class="position">Line 0, Col 200</span></td></tr>
+            <tr><td><span class="file-path" title="Logout.aspx.cs">Logout.aspx.cs</span></td><td><span class="position">Line 0, Col 143</span></td></tr>
+            <tr><td><span class="file-path" title="Login.aspx.designer.cs">Login.aspx.designer.cs</span></td><td><span class="position">Line 0, Col 171</span></td></tr>
+            <tr><td><span class="file-path" title="Login.aspx.designer.cs">Login.aspx.designer.cs</span></td><td><span class="position">Line 0, Col 106</span></td></tr>
+            <tr><td><span class="file-path" title="Login.aspx.cs">Login.aspx.cs</span></td><td><span class="position">Line 0, Col 567</span></td></tr>
+            <tr><td><span class="file-path" title="Login.aspx.cs">Login.aspx.cs</span></td><td><span class="position">Line 0, Col 387</span></td></tr>
+            <tr><td><span class="file-path" title="Login.aspx.cs">Login.aspx.cs</span></td><td><span class="position">Line 0, Col 333</span></td></tr>
+            <tr><td><span class="file-path" title="Login.aspx.cs">Login.aspx.cs</span></td><td><span class="position">Line 0, Col 286</span></td></tr>
+            <tr><td><span class="file-path" title="Login.aspx.cs">Login.aspx.cs</span></td><td><span class="position">Line 0, Col 258</span></td></tr>
+            <tr><td><span class="file-path" title="Login.aspx.cs">Login.aspx.cs</span></td><td><span class="position">Line 0, Col 190</span></td></tr>
+            <tr><td><span class="file-path" title="Login.aspx.cs">Login.aspx.cs</span></td><td><span class="position">Line 0, Col 133</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.designer.cs">Default.aspx.designer.cs</span></td><td><span class="position">Line 0, Col 577</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.designer.cs">Default.aspx.designer.cs</span></td><td><span class="position">Line 0, Col 513</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.designer.cs">Default.aspx.designer.cs</span></td><td><span class="position">Line 0, Col 439</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.designer.cs">Default.aspx.designer.cs</span></td><td><span class="position">Line 0, Col 369</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.designer.cs">Default.aspx.designer.cs</span></td><td><span class="position">Line 0, Col 308</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.designer.cs">Default.aspx.designer.cs</span></td><td><span class="position">Line 0, Col 235</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.designer.cs">Default.aspx.designer.cs</span></td><td><span class="position">Line 0, Col 173</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.designer.cs">Default.aspx.designer.cs</span></td><td><span class="position">Line 0, Col 102</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 6326</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 6294</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 6231</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 6197</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 4232</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 4197</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 4168</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 4151</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 4071</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3717</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3693</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3232</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3207</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 1702</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 2813</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 2768</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 2126</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 2000</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 1912</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 1848</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 1786</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 902</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 1634</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 1584</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 1551</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 1506</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 1145</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 1085</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 987</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 822</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 788</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 722</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 678</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 559</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 508</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 454</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 370</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 341</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 230</span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>API is binary incompatible for selected .NET version: affects existing binaries, often requiring recompilation, because the API has changed in a way that prevents older binaries from loading or executing.</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr class="issue-row" data-criticality="mandatory" data-targets='{}' data-default-effort="1" data-default-severity="mandatory" data-rule="Project.0001" onclick="toggleRow('row-dotnetupgrade-1', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-dotnetupgrade-1">&#x276F;</button> Project file needs to be converted to SDK-style</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-mandatory"></span>Mandatory</span></td>
+      <td class="sp-cell">1</td>
+    </tr>
+    <tr class="detail-row" id="row-dotnetupgrade-1" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="file-list">
+            <table><colgroup><col style="width:70%"/><col style="width:30%"/></colgroup>
+            <thead><tr><th>File</th><th>Position</th></tr></thead><tbody>
+            <tr><td><span class="file-path" title="ZavaAccountManager.csproj">ZavaAccountManager.csproj</span></td><td><span class="position"></span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>Project file needs to be converted to SDK-style. Modern .NET framework projects require a change in the project file format and use SDK corresponding to project flavor and functionality.</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr class="issue-row" data-criticality="mandatory" data-targets='{}' data-default-effort="1" data-default-severity="mandatory" data-rule="Project.0002" onclick="toggleRow('row-dotnetupgrade-2', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-dotnetupgrade-2">&#x276F;</button> Project&#39;s target framework(s) needs to be changed</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-mandatory"></span>Mandatory</span></td>
+      <td class="sp-cell">1</td>
+    </tr>
+    <tr class="detail-row" id="row-dotnetupgrade-2" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="file-list">
+            <table><colgroup><col style="width:70%"/><col style="width:30%"/></colgroup>
+            <thead><tr><th>File</th><th>Position</th></tr></thead><tbody>
+            <tr><td><span class="file-path" title="ZavaAccountManager.csproj">ZavaAccountManager.csproj</span></td><td><span class="position"></span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>Project&#39;s target framework(s) needs to be changed to the new target framework that you selected for this upgrade.</p><p>During upgrade target framework will be adjusted to corresponding platform when applicable. In some cases project would result in multiple target frameworks after the upgrade if it was using features that now have their own platforms in modern .NET frameworks (windows, iOS, Android etc).</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr class="issue-row" data-criticality="mandatory" data-targets='{}' data-default-effort="2" data-default-severity="mandatory" data-rule="LegacyConfiguration" onclick="toggleRow('row-dotnetupgrade-3', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-dotnetupgrade-3">&#x276F;</button> Legacy Configuration System</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-mandatory"></span>Mandatory</span></td>
+      <td class="sp-cell">2</td>
+    </tr>
+    <tr class="detail-row" id="row-dotnetupgrade-3" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>Legacy XML-based configuration system (app.config/web.config) that has been replaced by a more flexible configuration model in .NET Core. The old system was rigid and XML-based. Migrate to Microsoft.Extensions.Configuration with JSON/environment variables; use System.Configuration.ConfigurationManager NuGet package as interim bridge if needed.</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr class="issue-row" data-criticality="mandatory" data-targets='{}' data-default-effort="4" data-default-severity="mandatory" data-rule="SystemWeb" onclick="toggleRow('row-dotnetupgrade-4', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-dotnetupgrade-4">&#x276F;</button> ASP.NET Framework (System.Web)</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-mandatory"></span>Mandatory</span></td>
+      <td class="sp-cell">4</td>
+    </tr>
+    <tr class="detail-row" id="row-dotnetupgrade-4" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>Legacy ASP.NET Framework APIs for web applications (System.Web.*) that don&#39;t exist in ASP.NET Core due to architectural differences. ASP.NET Core represents a complete redesign of the web framework. Migrate to ASP.NET Core equivalents or consider System.Web.Adapters package for compatibility.</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr class="issue-row" data-criticality="potential" data-targets='{}' data-default-effort="1" data-default-severity="potential" data-rule="Api.0002" onclick="toggleRow('row-dotnetupgrade-5', this)" style="cursor:pointer;">
+      <td style="white-space:normal;"><div class="issue-title-cell"><button class="expand-btn" id="btn-row-dotnetupgrade-5">&#x276F;</button> Source incompatible for selected .NET version</div></td>
+      <td class="crit-cell"><span class="crit-label"><span class="crit-square crit-square-potential"></span>Potential</span></td>
+      <td class="sp-cell">1</td>
+    </tr>
+    <tr class="detail-row" id="row-dotnetupgrade-5" style="display:none;">
+      <td colspan="3">
+        <div class="detail-content">
+          <div class="file-list">
+            <table><colgroup><col style="width:70%"/><col style="width:30%"/></colgroup>
+            <thead><tr><th>File</th><th>Position</th></tr></thead><tbody>
+            <tr><td><span class="file-path" title="Site.Master.cs">Site.Master.cs</span></td><td><span class="position">Line 0, Col 248</span></td></tr>
+            <tr><td><span class="file-path" title="Site.Master.cs">Site.Master.cs</span></td><td><span class="position">Line 0, Col 157</span></td></tr>
+            <tr><td><span class="file-path" title="Logout.aspx.cs">Logout.aspx.cs</span></td><td><span class="position">Line 0, Col 349</span></td></tr>
+            <tr><td><span class="file-path" title="Logout.aspx.cs">Logout.aspx.cs</span></td><td><span class="position">Line 0, Col 230</span></td></tr>
+            <tr><td><span class="file-path" title="Login.aspx.cs">Login.aspx.cs</span></td><td><span class="position">Line 0, Col 387</span></td></tr>
+            <tr><td><span class="file-path" title="Login.aspx.cs">Login.aspx.cs</span></td><td><span class="position">Line 0, Col 333</span></td></tr>
+            <tr><td><span class="file-path" title="Login.aspx.cs">Login.aspx.cs</span></td><td><span class="position">Line 0, Col 286</span></td></tr>
+            <tr><td><span class="file-path" title="Login.aspx.cs">Login.aspx.cs</span></td><td><span class="position">Line 0, Col 258</span></td></tr>
+            <tr><td><span class="file-path" title="Login.aspx.cs">Login.aspx.cs</span></td><td><span class="position">Line 0, Col 190</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 6176</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 6132</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 6095</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 5902</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 5801</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 5024</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 4294</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 4051</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 4014</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3895</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3794</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3673</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3628</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3591</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3421</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3320</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3187</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3150</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 3019</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 2918</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 2745</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 2736</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 2698</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 2604</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 2565</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 2527</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 2274</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 2173</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 1466</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 1457</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 1413</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 1280</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 1179</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 454</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 370</span></td></tr>
+            <tr><td><span class="file-path" title="Default.aspx.cs">Default.aspx.cs</span></td><td><span class="position">Line 0, Col 341</span></td></tr>
+            </tbody></table>
+          </div>
+          <div class="explanation-panel">
+            <h4>Explanation</h4>
+            <div><p>API is source incompatible for selected .NET version: requires code changes to compile successfully when targeting a new version, such as removing obsolete APIs or changing method signatures.</p></div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+  <p style="margin-top:12px;"><a href="scenarios/dotnet-version-upgrade/assessment.html">View DotNET Upgrade Assessment →</a></p>
+</div>
+</div><!-- #tab-issues -->
+<div id="tab-arch" class="tab-panel">
+  <div class="fact-content"><h1 id="architecture-diagram">Architecture Diagram</h1>
+<p>ZavaAccountManager is an ASP.NET Web Forms application targeting .NET Framework 4.8 that provides bank staff with a customer account management console, delegating authentication to an external ZavaAuthGateway service and retrieving live balance/transaction data from a Zava Ledger microservice.</p>
+<h2 id="application-architecture">Application Architecture</h2>
+<div class="mermaid">
+flowchart TD
+    subgraph Client["Client Layer"]
+        Browser["Web Browser"]
+    end
+    subgraph App["Application Layer - ASP.NET Web Forms (.NET 4.8)"]
+        Master["Site.Master (MasterPage)"]
+        DefaultPage["Default.aspx (Account Console)"]
+        LoginPage["Login.aspx (Sign-In Redirect)"]
+        LogoutPage["Logout.aspx (Sign-Out)"]
+        FormsAuth["Forms Authentication (.ZAVAAUTH cookie)"]
+    end
+    subgraph Data["Data Layer - ADO.NET"]
+        SqlClient["System.Data.SqlClient"]
+        DB[("SQL Server - ZavaBankDB")]
+    end
+    subgraph External["External Services"]
+        AuthGateway["ZavaAuthGateway (Forms Auth Redirect)"]
+        LedgerSvc["Zava Ledger Service (HTTP/XML)"]
+    end
+
+    Browser -->|"HTTP requests"| Master
+    Master -->|"renders within"| DefaultPage
+    Master -->|"renders within"| LoginPage
+    Master -->|"renders within"| LogoutPage
+    DefaultPage -->|"checks auth"| FormsAuth
+    LoginPage -->|"redirects unauthenticated users"| AuthGateway
+    LogoutPage -->|"SignOut + redirect"| AuthGateway
+    FormsAuth -.->|"cookie-based session"| Browser
+    DefaultPage -->|"ADO.NET queries"| SqlClient
+    SqlClient -->|"SQL queries"| DB
+    DefaultPage -->|"GET balance and transactions"| LedgerSvc
+</div>
+<h3 id="technology-stack-summary">Technology Stack Summary</h3>
+<div class="table-wrap"><table><thead><tr>
+<th>Layer</th><th>Technology</th><th>Version</th><th>Purpose</th></tr></thead><tbody>
+<tr><td>Presentation</td><td>ASP.NET Web Forms</td><td>.NET 4.8</td><td>Server-side page rendering with code-behind</td></tr>
+<tr><td>Presentation</td><td>Site.Master</td><td>.NET 4.8</td><td>Shared page layout and navigation chrome</td></tr>
+<tr><td>Authentication</td><td>ASP.NET Forms Authentication</td><td>.NET 4.8</td><td>Cookie-based session management (.ZAVAAUTH)</td></tr>
+<tr><td>Data Access</td><td>ADO.NET (System.Data.SqlClient)</td><td>.NET 4.8</td><td>Direct SQL queries against SQL Server</td></tr>
+<tr><td>Database</td><td>SQL Server</td><td>unspecified</td><td>Stores customers, accounts, account types, transactions</td></tr>
+<tr><td>External Auth</td><td>ZavaAuthGateway</td><td>unspecified</td><td>Centralized employee authentication service</td></tr>
+<tr><td>External Data</td><td>Zava Ledger Service</td><td>unspecified</td><td>Authoritative balance and transaction history via HTTP/XML</td></tr>
+<tr><td>Runtime</td><td>.NET Framework</td><td>4.8</td><td>Application runtime</td></tr>
+<tr><td>Hosting</td><td>IIS (Web Forms)</td><td>unspecified</td><td>ASP.NET application host</td></tr>
+</tbody></table></div>
+<h3 id="data-storage-external-services">Data Storage &amp; External Services</h3>
+<p>The application uses a single SQL Server database (<code>ZavaBankDB</code>) accessed via raw ADO.NET. It queries four tables: <code>Customers</code>, <code>Accounts</code>, <code>AccountTypes</code>, and <code>Transactions</code>. No ORM or query abstraction layer is used — all SQL is inline in code-behind files. Two external HTTP services are also integrated: the <strong>ZavaAuthGateway</strong> handles employee authentication through Forms Authentication redirects (login/logout URLs are configured in <code>web.config</code>), and the <strong>Zava Ledger Service</strong> (<code>zava-ledger:8080</code>) is called via <code>HttpWebRequest</code> to retrieve real-time account balances and transaction history as XML. The application falls back to querying the local <code>Transactions</code> SQL table if the Ledger Service is unavailable.</p>
+<h3 id="key-architectural-decisions">Key Architectural Decisions</h3>
+<ul>
+<li><strong>No service or business logic layer</strong>: all data access, external HTTP calls, and business logic are implemented directly inside ASP.NET Web Forms code-behind classes, following a single-tier code-behind pattern.</li>
+<li><strong>Delegated authentication via ZavaAuthGateway</strong>: the application does not handle credential validation itself; unauthenticated requests are redirected to an external auth gateway, which sets the Forms Authentication cookie upon success.</li>
+<li><strong>Dual data sources for transactions</strong>: transaction data is fetched primarily from the Ledger Service (HTTP/XML), with a local SQL Server fallback, providing resilience but introducing potential data consistency concerns.</li>
+</ul>
+<h2 id="component-relationships">Component Relationships</h2>
+<div class="mermaid">
+flowchart LR
+    subgraph Presentation["Presentation (Web Forms Pages)"]
+        Master["SiteMaster (MasterPage)"]
+        DefaultPage["Default (Account Console Page)"]
+        LoginPage["Login (Sign-In Page)"]
+        LogoutPage["Logout (Sign-Out Page)"]
+    end
+    subgraph DataAccess["Data Access (Inline ADO.NET)"]
+        CustQuery["Customer Queries"]
+        AcctQuery["Account Queries"]
+        TxQuery["Transaction Fallback Query"]
+        AcctTypeQuery["AccountType Queries"]
+    end
+    subgraph Infrastructure["Infrastructure"]
+        FormsAuth["Forms Authentication"]
+        WebConfig["web.config (Config)"]
+        LedgerClient["HttpWebRequest - Ledger Client"]
+        AuthGwRedirect["AuthGateway Redirect"]
+    end
+
+    Master -->|"hosts"| DefaultPage
+    Master -->|"hosts"| LoginPage
+    Master -->|"hosts"| LogoutPage
+    DefaultPage -->|"binds customers"| CustQuery
+    DefaultPage -->|"binds accounts"| AcctQuery
+    DefaultPage -->|"binds account types"| AcctTypeQuery
+    DefaultPage -->|"fetches balance and transactions"| LedgerClient
+    LedgerClient -->|"falls back to SQL"| TxQuery
+    LoginPage -->|"redirects via"| AuthGwRedirect
+    LogoutPage -->|"signs out via"| FormsAuth
+    LogoutPage -->|"redirects via"| AuthGwRedirect
+    DefaultPage -.->|"checks IsAuthenticated"| FormsAuth
+    WebConfig -.->|"provides connection string"| CustQuery
+    WebConfig -.->|"provides connection string"| AcctQuery
+    WebConfig -.->|"provides connection string"| TxQuery
+    WebConfig -.->|"provides LedgerBaseUrl"| LedgerClient
+    WebConfig -.->|"provides AuthGateway URLs"| AuthGwRedirect
+</div>
+<h3 id="component-inventory">Component Inventory</h3>
+<div class="table-wrap"><table><thead><tr>
+<th>Component</th><th>Layer</th><th>Type</th><th>Responsibility</th></tr></thead><tbody>
+<tr><td>SiteMaster</td><td>Presentation</td><td>MasterPage</td><td>Shared page layout; displays signed-in user name; shows/hides login and logout links</td></tr>
+<tr><td>Default</td><td>Presentation</td><td>Web Forms Page</td><td>Main account management console; lists customers, shows account details, opens/closes accounts, displays balance and transactions</td></tr>
+<tr><td>Login</td><td>Presentation</td><td>Web Forms Page</td><td>Detects unauthenticated users and redirects them to ZavaAuthGateway login URL</td></tr>
+<tr><td>Logout</td><td>Presentation</td><td>Web Forms Page</td><td>Calls FormsAuthentication.SignOut() and redirects to ZavaAuthGateway logout URL</td></tr>
+<tr><td>Customer Queries</td><td>Data Access</td><td>Inline ADO.NET</td><td>Queries top 20 customers from the Customers table</td></tr>
+<tr><td>Account Queries</td><td>Data Access</td><td>Inline ADO.NET</td><td>Queries accounts by customer ID; updates account status (close); inserts new accounts</td></tr>
+<tr><td>AccountType Queries</td><td>Data Access</td><td>Inline ADO.NET</td><td>Queries active account types for the open-account form dropdown</td></tr>
+<tr><td>Transaction Fallback Query</td><td>Data Access</td><td>Inline ADO.NET</td><td>Queries the top 25 transactions from the local Transactions table when Ledger Service is unavailable</td></tr>
+<tr><td>HttpWebRequest Ledger Client</td><td>Infrastructure</td><td>HTTP Client</td><td>Calls Zava Ledger Service REST endpoints to retrieve XML balance and transaction data</td></tr>
+<tr><td>AuthGateway Redirect</td><td>Infrastructure</td><td>Auth Integration</td><td>Constructs redirect URLs to ZavaAuthGateway for login and logout flows</td></tr>
+<tr><td>Forms Authentication</td><td>Infrastructure</td><td>ASP.NET Security</td><td>Manages .ZAVAAUTH cookie; enforces authentication on all pages except Login.aspx and Logout.aspx</td></tr>
+<tr><td>web.config</td><td>Infrastructure</td><td>Configuration</td><td>Stores SQL Server connection string, AuthGateway URLs, and LedgerBaseUrl</td></tr>
+</tbody></table></div>
+</div>
+</div>
+<div id="tab-api" class="tab-panel">
+  <div class="fact-content"><h1 id="api-service-communication-contracts">API &amp; Service Communication Contracts</h1>
+<p>ZavaAccountManager is a single ASP.NET WebForms application exposing three browser-facing page endpoints and consuming two downstream HTTP services (ZavaAuthGateway for authentication and ZavaLedger for balance/transaction data).</p>
+<h2 id="service-catalog">Service Catalog</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Service</th><th>Port</th><th>Category</th><th>Purpose</th></tr></thead><tbody>
+<tr><td>ZavaAccountManager</td><td>8080</td><td>Business</td><td>ASP.NET WebForms bank account management console; manages customers, accounts, and delegates auth</td></tr>
+<tr><td>ZavaAuthGateway</td><td>configurable (default: 80)</td><td>Infrastructure</td><td>External authentication gateway; handles employee login and logout via Forms Auth redirect</td></tr>
+<tr><td>ZavaLedger</td><td>configurable (default: 8080)</td><td>Business</td><td>External ledger service; provides real-time account balance and transaction history over HTTP/XML</td></tr>
+<tr><td>SQL Server (ZavaBankDB)</td><td>1433</td><td>Infrastructure</td><td>Relational database storing Customers, Accounts, AccountTypes, and Transactions</td></tr>
+</tbody></table></div>
+<h2 id="api-endpoints-inventory">API Endpoints Inventory</h2>
+<p>&gt; Note: ZavaAccountManager is a WebForms application. It does not expose REST API endpoints; page interactions occur via HTTP GET (initial load) and HTTP POST (ASP.NET postback). The outbound REST calls it makes to ZavaLedger are also documented below.</p>
+<div class="table-wrap"><table><thead><tr>
+<th>Service</th><th>Method</th><th>Path</th><th>Request Type</th><th>Response Type</th></tr></thead><tbody>
+<tr><td>ZavaAccountManager</td><td>GET</td><td>/Login.aspx</td><td>Query: <code>ReturnUrl</code> (string)</td><td>HTML redirect page; sets <code>lnkAuthGateway.NavigateUrl</code> to ZavaAuthGateway</td></tr>
+<tr><td>ZavaAccountManager</td><td>GET</td><td>/Default.aspx</td><td>None (authenticated session required)</td><td>HTML account management console</td></tr>
+<tr><td>ZavaAccountManager</td><td>POST</td><td>/Default.aspx</td><td>ASP.NET postback (<code>__VIEWSTATE</code>, <code>__EVENTARGUMENT</code>) — actions: select customer, show balance, show transactions, close account, open account</td><td>HTML partial update via UpdatePanel</td></tr>
+<tr><td>ZavaAccountManager</td><td>GET</td><td>/Logout.aspx</td><td>None</td><td>Clears Forms Auth cookie; redirects to ZavaAuthGateway logout URL</td></tr>
+<tr><td>ZavaLedger (consumed)</td><td>GET</td><td>/api/accounts/{accountId}/balance</td><td>Path: <code>accountId</code> (int)</td><td>XML: <code>&lt;balance&gt;</code>, <code>&lt;availableBalance&gt;</code> nodes</td></tr>
+<tr><td>ZavaLedger (consumed)</td><td>GET</td><td>/api/accounts/{accountId}/transactions</td><td>Path: <code>accountId</code> (int)</td><td>XML: <code>&lt;transaction&gt;</code> list with <code>transactionId</code>, <code>amount</code>, <code>description</code>, <code>referenceNumber</code>, <code>transactionDate</code>, <code>status</code></td></tr>
+</tbody></table></div>
+<h2 id="management-observability-endpoints">Management &amp; Observability Endpoints</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Service</th><th>Endpoint</th><th>Custom Metrics</th></tr></thead><tbody>
+<tr><td>ZavaAccountManager</td><td>None detected</td><td>None</td></tr>
+<tr><td>ZavaLedger</td><td>Unknown (external service)</td><td>Unknown</td></tr>
+</tbody></table></div>
+<p>&gt; Note: No health check endpoints, Actuator endpoints, or metrics instrumentation were found in the ZavaAccountManager codebase.</p>
+<h2 id="dtos-contracts">DTOs &amp; Contracts</h2>
+<p>ZavaAccountManager does not define formal DTO classes. Data flows through the following patterns:</p>
+<ul>
+<li><strong>DataTable (System.Data)</strong>: Used as the in-process data model for customer lists, account lists, account types, and transaction history. DataTables are populated from <code>SqlDataAdapter</code> fills and bound directly to GridView controls. No serialization or immutability guarantees.</li>
+<li><strong>XmlDocument (System.Xml)</strong>: Used as the deserialization model for responses from the ZavaLedger service. Nodes are accessed via XPath selectors (<code>//balance</code>, <code>//availableBalance</code>, <code>//transaction</code>). No typed contract classes exist — the XML schema is implicitly assumed.</li>
+<li><strong>No OpenAPI/Swagger spec, protobuf schemas, or GraphQL schemas</strong> were found.</li>
+<li><strong>No request/response DTO classes</strong> (records, POJOs, or C# model classes) exist in this project.</li>
+</ul>
+<p>Refer to <code>data-architecture.md</code> for field-level details on the <code>Customers</code>, <code>Accounts</code>, <code>AccountTypes</code>, and <code>Transactions</code> database entities.</p>
+<h2 id="communication-patterns">Communication Patterns</h2>
+<p><strong>Synchronous HTTP (Outbound)</strong></p>
+<ul>
+<li><code>Default.aspx</code> calls ZavaLedger via <code>System.Net.HttpWebRequest</code> (blocking synchronous I/O) for two operations: <code>GET /api/accounts/{id}/balance</code> and <code>GET /api/accounts/{id}/transactions</code>. Responses are parsed as XML using <code>XmlDocument.Load(stream)</code>.</li>
+<li>Base URL is read from <code>AppSettings[&quot;LedgerBaseUrl&quot;]</code> (default: <code>http://zava-ledger:8080</code>).</li>
+<li><strong>No retry logic, circuit breaker, or timeout configuration</strong> is applied to these calls. Any network failure or non-200 response is caught by a bare <code>catch {}</code> block, which silences the error.</li>
+</ul>
+<p><strong>Fallback Behavior</strong></p>
+<ul>
+<li>If the ZavaLedger <code>transactions</code> call fails, the application falls back to a direct SQL query against the local <code>ZavaBankDB</code> database (<code>SELECT TOP 25 ... FROM Transactions WHERE AccountID=@a</code>). No fallback is implemented for the <code>balance</code> call — it returns the string <code>&quot;Ledger balance unavailable.&quot;</code> on failure.</li>
+</ul>
+<p><strong>Authentication Redirect (Outbound)</strong></p>
+<ul>
+<li><code>Login.aspx</code> constructs a redirect URL to ZavaAuthGateway (<code>AppSettings[&quot;AuthGatewayLoginUrl&quot;]</code>, default: <code>http://localhost/auth/Login.aspx</code>), appending a <code>ReturnUrl</code> query parameter. This is a browser-level redirect, not a server-to-server call.</li>
+<li><code>Logout.aspx</code> calls <code>FormsAuthentication.SignOut()</code> then issues a browser redirect to <code>AppSettings[&quot;AuthGatewayLogoutUrl&quot;]</code> (default: <code>http://localhost/auth/Logout.aspx</code>).</li>
+</ul>
+<p><strong>Asynchronous / Message Queue</strong>: None detected.</p>
+<p><strong>Service Discovery</strong>: No service discovery mechanism. All downstream service URLs are resolved from <code>web.config</code> <code>&lt;appSettings&gt;</code> entries (<code>AuthGatewayLoginUrl</code>, <code>AuthGatewayLogoutUrl</code>, <code>LedgerBaseUrl</code>). Services are referenced by hardcoded base URLs, not logical service names.</p>
+<p><strong>API Gateway</strong>: None. ZavaAccountManager connects directly to ZavaLedger and ZavaAuthGateway without an intermediary gateway layer.</p>
+<p><strong>Client-Side Load Balancing</strong>: None detected.</p>
+<p><strong>Startup Dependency Chain</strong>: No startup probes or readiness checks are configured. The application starts and serves traffic immediately via <code>xsp4</code>. If SQL Server or ZavaLedger is unavailable at startup, failures occur at request time (not at startup). Refer to <code>configuration-inventory.md</code> for configuration details.</p>
+<p><strong>Security Posture</strong>:</p>
+<ul>
+<li><strong>Authentication</strong>: ASP.NET Forms Authentication is enabled. All pages require an authenticated session (cookie <code>.ZAVAAUTH</code>) except <code>Login.aspx</code> and <code>Logout.aspx</code>. Authentication itself is <strong>delegated to the external ZavaAuthGateway</strong> via browser redirect — ZavaAccountManager does not issue tokens or validate credentials itself.</li>
+<li><strong>Authorization</strong>: All authenticated users have access to all pages. No role-based access control (<code>[Authorize(Roles=...)]</code> or <code>&lt;allow roles=&quot;...&quot;&gt;</code>) is configured beyond the blanket <code>&lt;deny users=&quot;?&quot; /&gt;</code>.</li>
+<li><strong>Transport Security</strong>: <strong>No HTTPS/TLS is configured.</strong> All traffic (browser-to-app, app-to-ZavaLedger, and app-to-ZavaAuthGateway redirect) uses plain HTTP. The <code>machineKey</code> for Forms Auth ticket encryption is hardcoded in <code>web.config</code> (static key; not rotated).</li>
+<li><strong>Outbound calls to ZavaLedger are unauthenticated</strong> — no token or credential is attached to <code>HttpWebRequest</code> calls.</li>
+</ul>
+<h2 id="service-technology-matrix">Service Technology Matrix</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Service</th><th>Web Framework</th><th>Data Access</th><th>Discovery</th><th>Gateway</th><th>Health Checks</th><th>Cache</th><th>Metrics</th></tr></thead><tbody>
+<tr><td>ZavaAccountManager</td><td>ASP.NET WebForms 4.8 (Mono/XSP4)</td><td>System.Data.SqlClient (raw ADO.NET)</td><td>None (hardcoded URLs)</td><td>None</td><td>None</td><td>None</td><td>None</td></tr>
+<tr><td>ZavaLedger</td><td>Unknown (external)</td><td>Unknown</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>ZavaAuthGateway</td><td>Unknown (external)</td><td>Unknown</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+</tbody></table></div>
+<h2 id="service-communication-sequence">Service Communication Sequence</h2>
+<div class="mermaid">
+sequenceDiagram
+    participant Browser as "Browser (Employee)"
+    participant App as "ZavaAccountManager (8080)"
+    participant AuthGW as "ZavaAuthGateway"
+    participant Ledger as "ZavaLedger (8080)"
+    participant DB as "SQL Server (ZavaBankDB)"
+
+    Browser->>App: GET /Login.aspx?ReturnUrl=/Default.aspx
+    App-->>Browser: 200 HTML - redirect link to ZavaAuthGateway
+    Browser->>AuthGW: GET /Login.aspx?ReturnUrl=...
+    AuthGW-->>Browser: Auth cookie (.ZAVAAUTH) + redirect to /Default.aspx
+    Browser->>App: GET /Default.aspx (with .ZAVAAUTH cookie)
+    App->>DB: SELECT TOP 20 Customers
+    DB-->>App: Customer rows
+    App->>DB: SELECT AccountTypes WHERE IsActive=1
+    DB-->>App: AccountType rows
+    App-->>Browser: 200 HTML - Customer List + Open Account form
+
+    Browser->>App: POST /Default.aspx (select customer postback)
+    App->>DB: SELECT Accounts WHERE CustomerID=@c
+    DB-->>App: Account rows
+    App-->>Browser: 200 HTML partial update (UpdatePanel) - Account Detail grid
+
+    Browser->>App: POST /Default.aspx (ShowBalance command)
+    App->>Ledger: GET /api/accounts/{id}/balance
+    alt Ledger Available
+        Ledger-->>App: XML balance response
+        App-->>Browser: 200 HTML - balance label updated
+    else Ledger Unavailable
+        App-->>Browser: 200 HTML - "Ledger balance unavailable."
+    end
+
+    Browser->>App: POST /Default.aspx (ShowTransactions command)
+    App->>Ledger: GET /api/accounts/{id}/transactions
+    alt Ledger Available
+        Ledger-->>App: XML transactions list
+        App-->>Browser: 200 HTML - transaction history grid
+    else Ledger Unavailable
+        App->>DB: SELECT TOP 25 Transactions WHERE AccountID=@a
+        DB-->>App: Transaction rows (fallback)
+        App-->>Browser: 200 HTML - transaction history grid (from DB)
+    end
+
+    Browser->>App: POST /Default.aspx (CloseAccount command)
+    App->>DB: UPDATE Accounts SET Status=Closed WHERE AccountID=@i
+    DB-->>App: rows affected
+    App-->>Browser: 200 HTML - "Account closed."
+
+    Browser->>App: POST /Default.aspx (Open Account insert)
+    App->>DB: INSERT INTO Accounts (CustomerID, AccountTypeID, ...)
+    DB-->>App: rows affected
+    App-->>Browser: 200 HTML - "Account opened."
+
+    Browser->>App: GET /Logout.aspx
+    App->>App: FormsAuthentication.SignOut()
+    App-->>Browser: Redirect to ZavaAuthGateway /Logout.aspx
+    Browser->>AuthGW: GET /Logout.aspx
+    AuthGW-->>Browser: Logged out
+</div>
+</div>
+</div>
+<div id="tab-config" class="tab-panel">
+  <div class="fact-content"><h1 id="configuration-externalized-settings-inventory">Configuration &amp; Externalized Settings Inventory</h1>
+<p>This ASP.NET WebForms application (.NET Framework 4.8) has a single configuration source (<code>web.config</code>) with all settings—including sensitive credentials—stored inline, with no environment-specific overrides, no secrets store integration, and no runtime profile system.</p>
+<h2 id="configuration-sources">Configuration Sources</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Source</th><th>Type</th><th>Path/Location</th><th>Notes</th></tr></thead><tbody>
+<tr><td><code>web.config</code></td><td>XML Application Config</td><td><code>/web.config</code></td><td>Primary config: connection strings, app settings, Forms auth, machine key</td></tr>
+<tr><td><code>packages.config</code></td><td>NuGet Package Manifest</td><td><code>/packages.config</code></td><td>Empty — no NuGet package dependencies declared</td></tr>
+<tr><td><code>ZavaAccountManager.csproj</code></td><td>MSBuild Project File</td><td><code>/ZavaAccountManager.csproj</code></td><td>Defines build configurations (Debug/Release), references .NET Framework assemblies</td></tr>
+<tr><td><code>Dockerfile</code></td><td>Container Build Definition</td><td><code>/Dockerfile</code></td><td>Specifies base image, build steps, exposed port; no environment variable injection</td></tr>
+</tbody></table></div>
+<p>&gt; Note: No <code>appsettings.json</code>, <code>launchSettings.json</code>, <code>appsettings.{Environment}.json</code>, <code>.env</code> files, cloud config server, secrets vault references, or Kubernetes/Docker Compose manifests were found.</p>
+<h2 id="build-profiles">Build Profiles</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Profile</th><th>Activation</th><th>Purpose</th><th>Key Dependencies/Plugins</th></tr></thead><tbody>
+<tr><td><code>Debug</code></td><td>Default (when <code>$(Configuration)</code> is unset)</td><td>Development build; debug symbols enabled, no optimization</td><td>MSBuild <code>Microsoft.CSharp.targets</code>; output to <code>bin\</code></td></tr>
+<tr><td><code>Release</code></td><td>Manual: <code>-p:Configuration=Release</code> at MSBuild invocation</td><td>Production build; identical <code>OutputPath</code> to Debug — no release-specific optimizations configured</td><td>MSBuild <code>Microsoft.CSharp.targets</code>; output to <code>bin\</code></td></tr>
+</tbody></table></div>
+<p>&gt; Note: Both Debug and Release configurations share the same <code>OutputPath</code> (<code>bin\</code>). The <code>web.config</code> <code>compilation debug=&quot;true&quot;</code> attribute is static and is not toggled by build profile — it would need to be manually changed or transformed for production.</p>
+<h2 id="runtime-profiles">Runtime Profiles</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Profile</th><th>Activation Method</th><th>Config Files</th><th>Key Overrides</th></tr></thead><tbody>
+<tr><td><em>(single static profile)</em></td><td>None — no runtime profile system</td><td><code>web.config</code> only</td><td>N/A</td></tr>
+</tbody></table></div>
+<p>&gt; Note: This application does not use ASP.NET Core&#39;s environment-based <code>appsettings.{Environment}.json</code> pattern. There are no <code>web.Debug.config</code> or <code>web.Release.config</code> XML transformation files. All configuration is static within <code>web.config</code>. The <code>ASPNETCORE_ENVIRONMENT</code> variable is not applicable to .NET Framework 4.8 WebForms.</p>
+<h2 id="properties-inventory">Properties Inventory</h2>
+<h3 id="connection-strings">Connection Strings</h3>
+<div class="table-wrap"><table><thead><tr>
+<th>Property Key</th><th>Default Value</th><th>Profiles</th><th>Source</th></tr></thead><tbody>
+<tr><td><code>ZavaBankDb</code> (connection string)</td><td><code>Server=sqlserver,1433;Database=ZavaBankDB;User Id=sa;Password=[MASKED];TrustServerCertificate=true;</code></td><td>All (static)</td><td><code>web.config</code> → <code>&lt;connectionStrings&gt;</code></td></tr>
+</tbody></table></div>
+<h3 id="application-settings-appsettings">Application Settings (<code>&lt;appSettings&gt;</code>)</h3>
+<div class="table-wrap"><table><thead><tr>
+<th>Property Key</th><th>Default Value</th><th>Profiles</th><th>Source</th></tr></thead><tbody>
+<tr><td><code>AuthGatewayLoginUrl</code></td><td><code>http://localhost/auth/Login.aspx</code></td><td>All (static)</td><td><code>web.config</code> → <code>&lt;appSettings&gt;</code></td></tr>
+<tr><td><code>AuthGatewayLogoutUrl</code></td><td><code>http://localhost/auth/Logout.aspx</code></td><td>All (static)</td><td><code>web.config</code> → <code>&lt;appSettings&gt;</code></td></tr>
+<tr><td><code>LedgerBaseUrl</code></td><td><code>http://zava-ledger:8080</code></td><td>All (static)</td><td><code>web.config</code> → <code>&lt;appSettings&gt;</code></td></tr>
+</tbody></table></div>
+<p>&gt; Note: <code>AuthGatewayLoginUrl</code> and <code>AuthGatewayLogoutUrl</code> use <code>localhost</code> which is a development/local value. <code>LedgerBaseUrl</code> uses the Docker service name <code>zava-ledger</code>, indicating container network DNS. Code in <code>Login.aspx.cs</code>, <code>Logout.aspx.cs</code>, and <code>Default.aspx.cs</code> reads these via <code>ConfigurationManager.AppSettings[...]</code> with inline fallback defaults (<code>http://localhost:8000/...</code>).</p>
+<h3 id="aspnet-systemweb-settings">ASP.NET System.Web Settings</h3>
+<div class="table-wrap"><table><thead><tr>
+<th>Property Key</th><th>Value</th><th>Profiles</th><th>Source</th></tr></thead><tbody>
+<tr><td><code>compilation/@debug</code></td><td><code>true</code></td><td>All (static)</td><td><code>web.config</code> → <code>&lt;system.web&gt;&lt;compilation&gt;</code></td></tr>
+<tr><td><code>compilation/@targetFramework</code></td><td><code>4.8</code></td><td>All (static)</td><td><code>web.config</code> → <code>&lt;system.web&gt;&lt;compilation&gt;</code></td></tr>
+<tr><td><code>httpRuntime/@targetFramework</code></td><td><code>4.8</code></td><td>All (static)</td><td><code>web.config</code> → <code>&lt;system.web&gt;&lt;httpRuntime&gt;</code></td></tr>
+<tr><td><code>customErrors/@mode</code></td><td><code>Off</code></td><td>All (static)</td><td><code>web.config</code> → <code>&lt;system.web&gt;&lt;customErrors&gt;</code></td></tr>
+<tr><td><code>authentication/@mode</code></td><td><code>Forms</code></td><td>All (static)</td><td><code>web.config</code> → <code>&lt;system.web&gt;&lt;authentication&gt;</code></td></tr>
+<tr><td><code>forms/@loginUrl</code></td><td><code>~/Login.aspx</code></td><td>All (static)</td><td><code>web.config</code> → <code>&lt;authentication&gt;&lt;forms&gt;</code></td></tr>
+<tr><td><code>forms/@timeout</code></td><td><code>30</code> (minutes)</td><td>All (static)</td><td><code>web.config</code> → <code>&lt;authentication&gt;&lt;forms&gt;</code></td></tr>
+<tr><td><code>forms/@name</code></td><td><code>.ZAVAAUTH</code></td><td>All (static)</td><td><code>web.config</code> → <code>&lt;authentication&gt;&lt;forms&gt;</code></td></tr>
+<tr><td><code>forms/@protection</code></td><td><code>All</code></td><td>All (static)</td><td><code>web.config</code> → <code>&lt;authentication&gt;&lt;forms&gt;</code></td></tr>
+<tr><td><code>forms/@slidingExpiration</code></td><td><code>true</code></td><td>All (static)</td><td><code>web.config</code> → <code>&lt;authentication&gt;&lt;forms&gt;</code></td></tr>
+<tr><td><code>forms/@path</code></td><td><code>/</code></td><td>All (static)</td><td><code>web.config</code> → <code>&lt;authentication&gt;&lt;forms&gt;</code></td></tr>
+<tr><td><code>machineKey/@validation</code></td><td><code>SHA1</code></td><td>All (static)</td><td><code>web.config</code> → <code>&lt;system.web&gt;&lt;machineKey&gt;</code></td></tr>
+<tr><td><code>machineKey/@decryption</code></td><td><code>AES</code></td><td>All (static)</td><td><code>web.config</code> → <code>&lt;system.web&gt;&lt;machineKey&gt;</code></td></tr>
+<tr><td><code>authorization</code> (default)</td><td><code>deny users=&quot;?&quot;</code> (all anonymous denied)</td><td>All (static)</td><td><code>web.config</code> → <code>&lt;system.web&gt;&lt;authorization&gt;</code></td></tr>
+<tr><td><code>authorization</code> for <code>Login.aspx</code></td><td><code>allow users=&quot;*&quot;</code></td><td>All (static)</td><td><code>web.config</code> → <code>&lt;location path=&quot;Login.aspx&quot;&gt;</code></td></tr>
+<tr><td><code>authorization</code> for <code>Logout.aspx</code></td><td><code>allow users=&quot;*&quot;</code></td><td>All (static)</td><td><code>web.config</code> → <code>&lt;location path=&quot;Logout.aspx&quot;&gt;</code></td></tr>
+</tbody></table></div>
+<h2 id="startup-parameters-resource-requirements">Startup Parameters &amp; Resource Requirements</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Service</th><th>Runtime/Options</th><th>Port</th><th>Memory</th><th>Instance Count</th></tr></thead><tbody>
+<tr><td>ZavaAccountManager (Mono/XSP4)</td><td><code>xsp4 --port 8080 --address 0.0.0.0 --nonstop</code></td><td>8080</td><td>Not specified</td><td>Not specified</td></tr>
+</tbody></table></div>
+<p>&gt; Note: No JVM-equivalent parameters apply (Mono runtime). No <code>-D</code> system properties, heap flags, Docker <code>mem_limit</code>, CPU limits, or Kubernetes resource constraints are configured. The <code>Dockerfile</code> does not set any <code>ENV</code> variables or <code>ARG</code> values.</p>
+<h2 id="startup-dependency-chain">Startup Dependency Chain</h2>
+<ol>
+<li><strong>SQL Server</strong> (<code>sqlserver:1433</code>) — must be reachable before the application can serve any authenticated request that queries the database. No readiness probe or wait mechanism is configured.</li>
+<li><strong>ZavaAccountManager</strong> (Mono XSP4, port 8080) — starts unconditionally via <code>CMD [&quot;xsp4&quot;, ...]</code>. No <code>depends_on</code>, <code>healthcheck</code>, or startup retry logic is present in the Dockerfile or any orchestration file.</li>
+<li><strong>zava-ledger</strong> (<code>http://zava-ledger:8080</code>) — consumed at runtime for balance and transaction data. Failure is caught with a <code>try/catch</code>; the application falls back to direct SQL queries for transactions if the ledger is unavailable.</li>
+</ol>
+<p>&gt; Note: No Docker Compose file, Kubernetes manifests, or orchestration configuration was found. Startup ordering is entirely unmanaged — there is no wait-for mechanism (no <code>dockerize</code>, no health checks, no readiness probes).</p>
+<h2 id="secrets-sensitive-configuration">Secrets &amp; Sensitive Configuration</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Secret Reference</th><th>Type</th><th>Value / Storage</th></tr></thead><tbody>
+<tr><td><code>ZavaBankDb</code> connection string password</td><td>Database credential</td><td><code>[MASKED]</code> — hardcoded in <code>web.config</code> <code>&lt;connectionStrings&gt;</code></td></tr>
+<tr><td><code>machineKey/@validationKey</code></td><td>ASP.NET Forms Auth / ViewState signing key</td><td><code>[MASKED]</code> — hardcoded in <code>web.config</code> <code>&lt;machineKey&gt;</code></td></tr>
+<tr><td><code>machineKey/@decryptionKey</code></td><td>ASP.NET Forms Auth / ViewState encryption key</td><td><code>[MASKED]</code> — hardcoded in <code>web.config</code> <code>&lt;machineKey&gt;</code></td></tr>
+<tr><td><code>ZavaBankDb</code> SQL login (<code>User Id=sa</code>)</td><td>Privileged database account</td><td>Hardcoded SA account in connection string</td></tr>
+</tbody></table></div>
+<h3 id="secrets-provisioning-workflow">Secrets Provisioning Workflow</h3>
+<p><strong>Current state:</strong> All secrets are statically embedded in <code>web.config</code> committed to source control. There is no secrets management system in use.</p>
+<ul>
+<li><strong>Secret source</strong>: <code>web.config</code> (plain-text XML, checked into the repository)</li>
+<li><strong>Identity/access model</strong>: None — the SQL Server SA (system administrator) account credentials are used directly, granting unrestricted database access</li>
+<li><strong>Provisioning sequence</strong>: No automated provisioning — secrets are manually edited in <code>web.config</code> before deployment</li>
+<li><strong>Affected services</strong>: All application operations (database reads/writes for customer and account data use the hardcoded connection string; Forms Authentication uses the hardcoded machine keys)</li>
+</ul>
+<p>&gt; ⚠️ <strong>Risk</strong>: Hardcoded <code>machineKey</code> values are a critical security concern — they enable cookie forgery and ViewState tampering if exposed. The SA account with a plain-text password in source control is a high-severity credential exposure. No secret rotation capability exists.</p>
+<h2 id="feature-flags">Feature Flags</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Flag Name</th><th>Default</th><th>Controlled By</th></tr></thead><tbody>
+<tr><td><em>(none identified)</em></td><td>N/A</td><td>N/A</td></tr>
+</tbody></table></div>
+<p>&gt; Note: No feature flag framework, <code>@ConditionalOnProperty</code>, <code>.NET FeatureManagement</code>, or custom toggle patterns were found. Conditional logic in the application is limited to authentication state checks (e.g., <code>Request.IsAuthenticated</code>) and null-coalescing fallbacks for config values in code.</p>
+<h2 id="framework-runtime-versions">Framework &amp; Runtime Versions</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Component</th><th>Version</th><th>Source</th></tr></thead><tbody>
+<tr><td>.NET Framework (target)</td><td>4.8</td><td><code>ZavaAccountManager.csproj</code> → <code>&lt;TargetFrameworkVersion&gt;v4.8&lt;/TargetFrameworkVersion&gt;</code></td></tr>
+<tr><td>ASP.NET WebForms</td><td>4.8 (bundled with .NET Framework 4.8)</td><td><code>web.config</code> → <code>compilation targetFramework=&quot;4.8&quot;</code></td></tr>
+<tr><td>MSBuild ToolsVersion</td><td>4.0</td><td><code>ZavaAccountManager.csproj</code> → <code>ToolsVersion=&quot;4.0&quot;</code></td></tr>
+<tr><td>Mono runtime</td><td>6.12</td><td><code>Dockerfile</code> → <code>FROM mono:6.12</code></td></tr>
+<tr><td>XSP4 (Mono web server)</td><td>Installed via <code>apt-get mono-xsp4</code> (version tied to Mono 6.12 Debian package)</td><td><code>Dockerfile</code></td></tr>
+<tr><td><code>mcs</code> (Mono C# Compiler)</td><td>Bundled with Mono 6.12</td><td><code>Dockerfile</code> RUN step</td></tr>
+<tr><td>System.Web</td><td>.NET Framework 4.8 (inbox)</td><td><code>ZavaAccountManager.csproj</code> → <code>&lt;Reference Include=&quot;System.Web&quot; /&gt;</code></td></tr>
+<tr><td>System.Data.SqlClient</td><td>.NET Framework 4.8 (inbox)</td><td><code>ZavaAccountManager.csproj</code> → <code>&lt;Reference Include=&quot;System.Data&quot; /&gt;</code></td></tr>
+<tr><td>System.Configuration</td><td>.NET Framework 4.8 (inbox)</td><td><code>ZavaAccountManager.csproj</code> → <code>&lt;Reference Include=&quot;System.Configuration&quot; /&gt;</code></td></tr>
+<tr><td>NuGet packages</td><td>None</td><td><code>packages.config</code> (empty)</td></tr>
+<tr><td>Docker base OS</td><td>Debian Buster (via <code>mono:6.12</code>)</td><td><code>Dockerfile</code></td></tr>
+</tbody></table></div>
+</div>
+</div>
+<div id="tab-workflows" class="tab-panel">
+  <div class="fact-content"><h1 id="core-business-workflows">Core Business Workflows</h1>
+<p>ZavaAccountManager is a bank employee portal for managing customer accounts — enabling staff (admin and teller roles) to view customers, open and close accounts, check balances, and review transaction history as part of the Zava Bank multi-service platform.</p>
+<h2 id="domain-entities">Domain Entities</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Entity</th><th>Service / Bounded Context</th><th>Description</th><th>Key Relationships</th></tr></thead><tbody>
+<tr><td>Customer</td><td>Account Management</td><td>A bank customer whose accounts are managed by staff</td><td>Owns one or more Accounts</td></tr>
+<tr><td>Account</td><td>Account Management</td><td>A bank account (checking, savings, etc.) belonging to a customer</td><td>Belongs to a Customer; has an AccountType; referenced by Transactions</td></tr>
+<tr><td>AccountType</td><td>Account Management</td><td>A classification of account products offered by the bank (e.g., Checking, Savings)</td><td>Used to categorize Accounts</td></tr>
+<tr><td>Transaction</td><td>Ledger (external)</td><td>A financial movement recorded against an account</td><td>Belongs to an Account; sourced from ZavaLedger service with local DB fallback</td></tr>
+</tbody></table></div>
+<h2 id="service-to-domain-mapping">Service-to-Domain Mapping</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Service</th><th>Domain Context</th><th>Owned Entities</th><th>External Dependencies</th></tr></thead><tbody>
+<tr><td>ZavaAccountManager</td><td>Account Management</td><td>Customer, Account, AccountType</td><td>ZavaAuthGateway (authentication), ZavaLedger (balance and transaction data)</td></tr>
+<tr><td>ZavaAuthGateway</td><td>Identity and Access</td><td>User sessions, employee credentials</td><td>Consumed by ZavaAccountManager via Forms Authentication redirect</td></tr>
+<tr><td>ZavaLedger</td><td>Ledger / Transaction Ledger</td><td>Transaction, real-time Balance</td><td>Called by ZavaAccountManager via HTTP XML API; local Transactions table used as fallback</td></tr>
+</tbody></table></div>
+<h2 id="primary-workflows">Primary Workflows</h2>
+<h3 id="workflow-1-employee-authentication">Workflow 1: Employee Authentication</h3>
+<p>An unauthenticated employee accessing any protected page is redirected to the local Login page, which in turn redirects them to the external ZavaAuthGateway for credential verification. Upon successful authentication, ZavaAuthGateway issues a Forms Authentication cookie (<code>.ZAVAAUTH</code>) and redirects the employee back to their originally requested URL.</p>
+<p><strong>Steps:</strong></p>
+<ol>
+<li>Employee requests a protected page (any page except Login.aspx and Logout.aspx).</li>
+<li>ASP.NET Forms Authentication middleware detects no valid <code>.ZAVAAUTH</code> cookie and redirects to <code>~/Login.aspx?ReturnUrl=&lt;original URL&gt;</code>.</li>
+<li>Login.aspx builds the ZavaAuthGateway login URL with the <code>ReturnUrl</code> parameter and presents a link for the employee to continue.</li>
+<li>Employee follows the link to ZavaAuthGateway, which authenticates them and sets the <code>.ZAVAAUTH</code> cookie.</li>
+<li>Employee is redirected back to the original URL and is now authenticated.</li>
+<li>Session expires after 30 minutes of inactivity (sliding expiration).</li>
+</ol>
+<h3 id="workflow-2-customer-account-management">Workflow 2: Customer Account Management</h3>
+<p>An authenticated staff member uses the Account Management Console (Default.aspx) to view customer data and perform account operations.</p>
+<p><strong>Steps:</strong></p>
+<ol>
+<li>Staff member loads the Account Management Console; the system fetches the top 20 customers from the ZavaBankDb database and displays them.</li>
+<li>Staff selects a customer row; the system fetches and displays all accounts for that customer.</li>
+<li>Staff chooses one of three actions for a listed account:</li>
+</ol>
+<ul>
+<ul>
+<li><strong>Show Balance</strong>: Calls ZavaLedger XML API (<code>/api/accounts/{id}/balance</code>) to retrieve real-time balance and available balance. If ZavaLedger is unavailable, displays &quot;Ledger balance unavailable.&quot;</li>
+<li><strong>Show Transactions</strong>: Calls ZavaLedger XML API (<code>/api/accounts/{id}/transactions</code>) to retrieve the transaction list. If ZavaLedger is unavailable, falls back to querying the top 25 transactions from the local <code>Transactions</code> table.</li>
+<li><strong>Close Account</strong>: Updates the account record in ZavaBankDb, setting <code>Status = &#39;Closed&#39;</code> and recording <code>CloseDate</code> and <code>ModifiedDate</code>.</li>
+</ul>
+</ul>
+<h3 id="workflow-3-open-new-account">Workflow 3: Open New Account</h3>
+<p>An authenticated staff member opens a new bank account for a customer.</p>
+<p><strong>Steps:</strong></p>
+<ol>
+<li>Staff member enters the Customer ID, selects an active AccountType from the dropdown, and provides an opening balance (default: 100.00).</li>
+<li>The system validates that all three fields parse successfully as integer (Customer ID), integer (AccountType ID), and decimal (balance). If validation fails, the insert is cancelled and &quot;Invalid values.&quot; is shown.</li>
+<li>On success, the system generates an AccountNumber from the current UTC timestamp plus the Customer ID, then inserts the new account into the <code>Accounts</code> table with <code>Status = &#39;Active&#39;</code> and identical <code>Balance</code> and <code>AvailableBalance</code>.</li>
+<li>The accounts grid for the selected customer is refreshed and &quot;Account opened.&quot; is displayed.</li>
+</ol>
+<h3 id="workflow-4-employee-sign-out">Workflow 4: Employee Sign-Out</h3>
+<ol>
+<li>Staff member clicks the logout link.</li>
+<li>Logout.aspx calls <code>FormsAuthentication.SignOut()</code> to clear the <code>.ZAVAAUTH</code> cookie.</li>
+<li>Employee is redirected to the ZavaAuthGateway logout URL to complete the sign-out on the identity provider side.</li>
+</ol>
+<h2 id="cross-service-data-flows">Cross-Service Data Flows</h2>
+<p><strong>Balance Retrieval (ZavaLedger integration):</strong></p>
+<p>ZavaAccountManager calls ZavaLedger (<code>http://zava-ledger:8080/api/accounts/{accountId}/balance</code>) via an HTTP GET request and parses the XML response to extract <code>//balance</code> and <code>//availableBalance</code> nodes. If ZavaLedger is unreachable or returns an error, the application catches the exception and displays &quot;Ledger balance unavailable.&quot; — no local fallback data is provided for balance queries.</p>
+<p><strong>Transaction History (ZavaLedger with local fallback):</strong></p>
+<p>ZavaAccountManager calls ZavaLedger (<code>/api/accounts/{accountId}/transactions</code>) and parses the XML transaction list. If ZavaLedger is unavailable, the application falls back to querying the local <code>Transactions</code> table in ZavaBankDb (top 25 records by date descending). This ensures staff can always view recent transaction history even when the Ledger service is down, though the fallback data may lag behind the authoritative ledger.</p>
+<p><strong>Authentication (ZavaAuthGateway delegation):</strong></p>
+<p>Authentication is fully delegated to ZavaAuthGateway. ZavaAccountManager only verifies the <code>.ZAVAAUTH</code> Forms Authentication cookie and reads <code>Context.User.Identity.Name</code> to display the signed-in employee name. It never handles passwords or credential storage.</p>
+<h2 id="business-workflow-sequence">Business Workflow Sequence</h2>
+<div class="mermaid">
+sequenceDiagram
+    participant Staff as "Bank Staff"
+    participant AM as "ZavaAccountManager"
+    participant AuthGW as "ZavaAuthGateway"
+    participant DB as "ZavaBankDb (SQL Server)"
+    participant Ledger as "ZavaLedger Service"
+
+    Staff->>AM: Access Account Management Console
+    alt Not Authenticated
+        AM-->>Staff: Redirect to Login.aspx
+        Staff->>AM: Load Login page
+        AM-->>Staff: Show link to ZavaAuthGateway
+        Staff->>AuthGW: Authenticate (enter credentials)
+        AuthGW-->>Staff: Set .ZAVAAUTH cookie, redirect back
+        Staff->>AM: Access console (authenticated)
+    end
+
+    AM->>DB: SELECT TOP 20 Customers
+    DB-->>AM: Customer list
+    AM-->>Staff: Display customer grid
+
+    Staff->>AM: Select customer
+    AM->>DB: SELECT Accounts WHERE CustomerID = selected
+    DB-->>AM: Account list
+    AM-->>Staff: Display accounts for customer
+
+    alt Staff requests Balance
+        AM->>Ledger: GET /api/accounts/{id}/balance (XML)
+        alt Ledger Available
+            Ledger-->>AM: XML balance response
+            AM-->>Staff: Display Balance and AvailableBalance
+        else Ledger Unavailable
+            Note over AM: Catch exception - no local fallback
+            AM-->>Staff: "Ledger balance unavailable."
+        end
+    else Staff requests Transactions
+        AM->>Ledger: GET /api/accounts/{id}/transactions (XML)
+        alt Ledger Available
+            Ledger-->>AM: XML transaction list
+            AM-->>Staff: Display transaction history from Ledger
+        else Ledger Unavailable
+            AM->>DB: SELECT TOP 25 Transactions WHERE AccountID = selected
+            DB-->>AM: Local transaction records
+            AM-->>Staff: Display transaction history from local DB
+        end
+    else Staff closes account
+        AM->>DB: UPDATE Accounts SET Status='Closed', CloseDate=NOW()
+        DB-->>AM: Confirm update
+        AM-->>Staff: "Account closed."
+    else Staff opens new account
+        AM->>AM: Validate Customer ID, AccountType, Opening Balance
+        alt Validation passes
+            AM->>DB: INSERT INTO Accounts (Status='Active', Balance=opening)
+            DB-->>AM: Confirm insert
+            AM-->>Staff: "Account opened."
+        else Validation fails
+            AM-->>Staff: "Invalid values."
+        end
+    end
+</div>
+<h2 id="business-rules-decision-logic">Business Rules &amp; Decision Logic</h2>
+<h3 id="validation-rules">Validation Rules</h3>
+<ul>
+<li><strong>Open Account input validation</strong>: Customer ID must be a valid integer, Account Type must be a selected integer value, and Opening Balance must be a valid decimal. Any parse failure cancels the insert operation.</li>
+<li><strong>Account Number generation</strong>: AccountNumber is computed as <code>yyMMddHHmmss</code> UTC timestamp concatenated with the zero-padded Customer ID (2 digits), ensuring uniqueness by time and customer.</li>
+<li><strong>Opening Balance equals Available Balance</strong>: When opening an account, <code>Balance</code> and <code>AvailableBalance</code> are set to the same value.</li>
+</ul>
+<h3 id="state-transitions">State Transitions</h3>
+<ul>
+<li><strong>Account lifecycle</strong>: Accounts are created with <code>Status = &#39;Active&#39;</code>. The only supported transition in this application is <code>Active → Closed</code>, triggered by the Close Account action. Closed accounts retain their history and are not deleted.</li>
+<li><strong>Session lifecycle</strong>: An authenticated session expires after 30 minutes of inactivity (sliding expiration). Explicit logout clears the cookie and delegates sign-out to ZavaAuthGateway.</li>
+</ul>
+<h3 id="business-constraints">Business Constraints</h3>
+<ul>
+<li><strong>Customer list limit</strong>: The customer grid displays only the top 20 customers ordered by CustomerID. There is no pagination; this is a hard limit.</li>
+<li><strong>Transaction history limit (fallback)</strong>: When ZavaLedger is unavailable, only the 25 most recent transactions from the local database are shown.</li>
+<li><strong>Active account types only</strong>: The Open Account form only displays AccountTypes where <code>IsActive = 1</code>.</li>
+</ul>
+<h3 id="authorization">Authorization</h3>
+<ul>
+<li><strong>All pages require authentication</strong> by default (<code>&lt;deny users=&quot;?&quot; /&gt;</code>). Only Login.aspx and Logout.aspx are explicitly open to unauthenticated users.</li>
+<li><strong>Role differentiation</strong> (admin vs. teller) is managed entirely by ZavaAuthGateway; ZavaAccountManager does not enforce role-based access control beyond requiring authentication.</li>
+</ul>
+<h3 id="error-handling">Error Handling</h3>
+<ul>
+<li><strong>Ledger unavailable for balance</strong>: Exception is caught and a user-friendly message &quot;Ledger balance unavailable.&quot; is displayed. No retry logic.</li>
+<li><strong>Ledger unavailable for transactions</strong>: Exception is caught and the application transparently falls back to querying the local <code>Transactions</code> table, providing continuity of service.</li>
+<li><strong>Invalid account row index</strong>: The <code>gvAccounts_RowCommand</code> handler validates the row index before proceeding to prevent index-out-of-bounds errors.</li>
+</ul>
+<h3 id="transactions">Transactions</h3>
+<ul>
+<li>Each database write (account insert, account close) is executed as a single SQL command with no explicit distributed transaction coordination. The application does not use a saga or compensating action pattern.</li>
+</ul>
+</div>
+</div>
+<div id="tab-deps" class="tab-panel">
+  <div class="fact-content"><h1 id="dependency-map">Dependency Map</h1>
+<p>ZavaAccountManager is an ASP.NET Web Forms application targeting .NET Framework 4.8. It declares <strong>no external NuGet packages</strong> — all dependencies are built-in .NET Framework BCL and System.Web assemblies.</p>
+<h2 id="dependencies">Dependencies</h2>
+<div class="mermaid">
+flowchart LR
+    App["ZavaAccountManager\n(.NET Framework 4.8)"]
+
+    subgraph Web["Web Frameworks"]
+        SystemWeb["ASP.NET Web Forms\n(System.Web v4.8)"]
+        SystemWebExt["System.Web.Extensions v4.8"]
+    end
+
+    subgraph DB["Database / ORM"]
+        SystemData["System.Data v4.8\n(SqlClient built-in)"]
+    end
+
+    subgraph Sec["Security"]
+        FormsAuth["Forms Authentication\n(System.Web built-in)"]
+    end
+
+    subgraph Util["Utilities"]
+        SystemCore["System.Core v4.8"]
+        SystemConfig["System.Configuration v4.8"]
+        SystemXml["System.Xml v4.8"]
+    end
+
+    App -->|"web"| Web
+    App -->|"persistence"| DB
+    App -->|"security"| Sec
+    App -->|"utilities"| Util
+</div>
+<h3 id="dependency-summary">Dependency Summary</h3>
+<div class="table-wrap"><table><thead><tr>
+<th>Category</th><th>Count</th><th>Key Libraries</th><th>Notes</th></tr></thead><tbody>
+<tr><td>Web Frameworks</td><td>2</td><td>ASP.NET Web Forms (System.Web 4.8), System.Web.Extensions 4.8</td><td>Legacy Web Forms stack on .NET Framework 4.8</td></tr>
+<tr><td>Database / ORM</td><td>1</td><td>System.Data 4.8 (System.Data.SqlClient built-in)</td><td>Raw ADO.NET; no ORM layer</td></tr>
+<tr><td>Security</td><td>1</td><td>Forms Authentication (System.Web built-in)</td><td>Cookie-based; static machineKey in web.config</td></tr>
+<tr><td>Utilities</td><td>3</td><td>System.Core 4.8, System.Configuration 4.8, System.Xml 4.8</td><td>Standard BCL assemblies</td></tr>
+</tbody></table></div>
+<h3 id="version-compatibility-risks">Version &amp; Compatibility Risks</h3>
+<p>All runtime dependencies are BCL assemblies shipped with .NET Framework 4.8. While .NET Framework 4.8 is the final major release of the legacy framework and receives security fixes, it is in maintenance mode with no new feature development. ASP.NET Web Forms is not available in modern .NET (6/8/9) and has no direct migration path — porting requires rewriting the presentation layer to ASP.NET Core (Razor Pages, MVC, or Blazor). <code>System.Data.SqlClient</code> is the legacy SQL Server client; its modern replacement is <code>Microsoft.Data.SqlClient</code> (available as a NuGet package on both .NET Framework and .NET). The static <code>machineKey</code> values hard-coded in <code>web.config</code> represent a security risk and should be replaced with auto-generated or environment-supplied keys.</p>
+<h3 id="notable-observations">Notable Observations</h3>
+<ul>
+<li><strong>No external NuGet packages</strong>: The entire dependency surface is the .NET Framework 4.8 BCL. This is unusually minimal and suggests the project avoids third-party libraries entirely, relying solely on built-in framework capabilities.</li>
+<li><strong>ASP.NET Web Forms is a dead-end technology</strong>: Web Forms is not supported on .NET 6+ and has no migration shim — any modernization to .NET 8/9 requires a full UI rewrite.</li>
+<li><strong>No ORM or query abstraction</strong>: The application uses raw <code>System.Data.SqlClient</code> (ADO.NET), increasing the migration surface when switching to <code>Microsoft.Data.SqlClient</code> or introducing an ORM such as Entity Framework Core.</li>
+<li><strong>Hard-coded machineKey in web.config</strong>: The <code>validationKey</code> and <code>decryptionKey</code> are static plain-text values, which is a known security anti-pattern; any host with access to the config file can forge authentication cookies.</li>
+</ul>
+<h2 id="test-dependencies">Test Dependencies</h2>
+<p>No test-scope dependencies detected.</p>
+<p>Total test-scope dependencies: 0</p>
+<p>No test framework, unit testing library, or integration test infrastructure was found in the project. There are no test projects, no <code>packages.config</code> entries scoped to test, and no test-related assembly references in the <code>.csproj</code>. Adding a testing framework (e.g., xUnit or MSTest with Moq) is recommended before any modernization effort.</p>
+</div>
+</div>
+<div id="tab-data" class="tab-panel">
+  <div class="fact-content"><h1 id="data-architecture-persistence-layer">Data Architecture &amp; Persistence Layer</h1>
+<p>ZavaAccountManager uses a single SQL Server database (<code>ZavaBankDB</code>) accessed directly via ADO.NET (<code>System.Data.SqlClient</code>) with no ORM or migration tooling. Transaction history is supplemented by a remote <code>zava-ledger</code> HTTP service with SQL Server as a fallback.</p>
+<h2 id="database-configuration">Database Configuration</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Service/Module</th><th>DB Type</th><th>Profile</th><th>Driver</th><th>Connection</th><th>Migration Tool</th></tr></thead><tbody>
+<tr><td>ZavaAccountManager</td><td>SQL Server</td><td>Default (all environments)</td><td>System.Data.SqlClient (ADO.NET, .NET Framework 4.8)</td><td><code>Server=sqlserver,1433;Database=ZavaBankDB;User Id=sa;TrustServerCertificate=true</code> (see <code>configuration-inventory.md</code> for full property inventory)</td><td>None — no schema migration tool detected; schema is managed externally</td></tr>
+</tbody></table></div>
+<h2 id="data-ownership-per-service">Data Ownership per Service</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Service</th><th>Tables Owned</th><th>ORM Framework</th><th>Caching</th><th>Notes</th></tr></thead><tbody>
+<tr><td>ZavaAccountManager</td><td>Customers, Accounts, AccountTypes, Transactions</td><td>None (raw ADO.NET — <code>SqlConnection</code>, <code>SqlCommand</code>, <code>SqlDataAdapter</code>)</td><td>None</td><td>All data access is via inline SQL in code-behind files; no repository abstraction layer</td></tr>
+<tr><td>zava-ledger (external)</td><td>Transactions (authoritative source)</td><td>Unknown (external service)</td><td>Unknown</td><td>Balance and transaction data fetched via HTTP/XML; local Transactions table used as fallback only</td></tr>
+</tbody></table></div>
+<h2 id="entity-model">Entity Model</h2>
+<p>&gt; Note: No ORM entity classes exist. The tables below are inferred from inline SQL queries in <code>Default.aspx.cs</code>. Field types and constraints are inferred from query usage and cannot be fully verified without a schema definition file.</p>
+<div class="mermaid">
+erDiagram
+    Customer ||--o{ Account : "has"
+    Account }o--|| AccountType : "typed by"
+    Account ||--o{ Transaction : "contains"
+
+    Customer {
+        int CustomerID PK
+        string FirstName
+        string LastName
+        string Email
+        string Status
+    }
+
+    Account {
+        int AccountID PK
+        int CustomerID FK
+        int AccountTypeID FK
+        string AccountNumber
+        decimal Balance
+        decimal AvailableBalance
+        string Status
+        datetime OpenDate
+        datetime CloseDate
+        datetime LastActivityDate
+        datetime CreatedDate
+        datetime ModifiedDate
+    }
+
+    AccountType {
+        int AccountTypeID PK
+        string TypeName
+        bit IsActive
+    }
+
+    Transaction {
+        int TransactionID PK
+        int AccountID FK
+        decimal Amount
+        string Description
+        string ReferenceNumber
+        datetime TransactionDate
+        string Status
+    }
+</div>
+<h2 id="key-repository-methods">Key Repository Methods</h2>
+<p>There are no repository interfaces or classes. All data access is performed inline in <code>Default.aspx.cs</code> via ADO.NET. The following table documents the key data access operations by logical purpose:</p>
+<div class="table-wrap"><table><thead><tr>
+<th>Module</th><th>Method (Logical)</th><th>SQL Operation</th><th>Source File</th><th>Purpose</th></tr></thead><tbody>
+<tr><td>ZavaAccountManager</td><td>BindCustomers</td><td><code>SELECT TOP 20 CustomerID, FirstName, LastName, Email, Status FROM Customers ORDER BY CustomerID</code></td><td><code>Default.aspx.cs</code></td><td>Loads first 20 customers into customer grid</td></tr>
+<tr><td>ZavaAccountManager</td><td>BindAccounts(customerId)</td><td><code>SELECT AccountID, AccountNumber, Balance, AvailableBalance, Status, OpenDate FROM Accounts WHERE CustomerID=@c ORDER BY AccountID DESC</code></td><td><code>Default.aspx.cs</code></td><td>Loads all accounts for a selected customer</td></tr>
+<tr><td>ZavaAccountManager</td><td>BindAccountTypes</td><td><code>SELECT AccountTypeID, TypeName FROM AccountTypes WHERE IsActive=1 ORDER BY TypeName</code></td><td><code>Default.aspx.cs</code></td><td>Loads active account types for open-account form dropdown</td></tr>
+<tr><td>ZavaAccountManager</td><td>OpenAccount (INSERT)</td><td><code>INSERT INTO Accounts (CustomerID, AccountTypeID, AccountNumber, Balance, ...) VALUES (...)</code></td><td><code>Default.aspx.cs</code></td><td>Creates a new bank account record</td></tr>
+<tr><td>ZavaAccountManager</td><td>CloseAccount (UPDATE)</td><td><code>UPDATE Accounts SET Status=&#39;Closed&#39;, CloseDate=GETDATE(), ModifiedDate=GETDATE() WHERE AccountID=@i</code></td><td><code>Default.aspx.cs</code></td><td>Marks an account as closed with timestamp</td></tr>
+<tr><td>ZavaAccountManager</td><td>BindTransactions(accountId) — fallback</td><td><code>SELECT TOP 25 TransactionID, Amount, Description, ReferenceNumber, TransactionDate, Status FROM Transactions WHERE AccountID=@a ORDER BY TransactionDate DESC</code></td><td><code>Default.aspx.cs</code></td><td>Fallback transaction list when ledger service is unreachable</td></tr>
+<tr><td>ZavaAccountManager</td><td>GetBalance(accountId)</td><td>HTTP GET to <code>zava-ledger/api/accounts/{id}/balance</code> (XML response)</td><td><code>Default.aspx.cs</code></td><td>Retrieves live balance from external ledger service</td></tr>
+<tr><td>ZavaAccountManager</td><td>BindTransactions(accountId) — primary</td><td>HTTP GET to <code>zava-ledger/api/accounts/{id}/transactions</code> (XML response)</td><td><code>Default.aspx.cs</code></td><td>Retrieves live transaction list from external ledger service</td></tr>
+</tbody></table></div>
+<h2 id="caching-strategy">Caching Strategy</h2>
+<p>No caching layer is implemented. There are no cache providers (Redis, MemoryCache, HttpRuntime.Cache, OutputCache), no <code>[OutputCache]</code> directives on pages, and no second-level cache configuration. All database queries execute on every page load or postback. ASP.NET ViewState is used to preserve the selected customer ID across postbacks but does not constitute a data cache.</p>
+<h2 id="data-ownership-boundaries">Data Ownership Boundaries</h2>
+<p>ZavaAccountManager uses a <strong>shared SQL Server database</strong> (<code>ZavaBankDB</code>) as its sole persistence store. There is no database-per-service isolation — all tables (Customers, Accounts, AccountTypes, Transactions) reside in the same database instance and are accessed directly by this application.</p>
+<p><strong>Cross-service data access:</strong> Balance and transaction data have a dual source:</p>
+<ul>
+<li><strong>Primary</strong>: The <code>zava-ledger</code> external service is queried via HTTP GET with XML responses for live balance and transaction data.</li>
+<li><strong>Fallback</strong>: The local <code>Transactions</code> table in <code>ZavaBankDB</code> is queried directly when the ledger service is unreachable, indicating a partial data duplication between services.</li>
+</ul>
+<p><strong>Read/write patterns:</strong> This service performs both reads and writes on <code>Accounts</code> (INSERT for open, UPDATE for close) and reads on <code>Customers</code>, <code>AccountTypes</code>, and <code>Transactions</code>. No CQRS or event-sourcing pattern is in use.</p>
+<h3 id="data-classification-sensitivity">Data Classification &amp; Sensitivity</h3>
+<div class="table-wrap"><table><thead><tr>
+<th>Entity</th><th>Sensitive Fields</th><th>Classification</th><th>Controls in Place</th></tr></thead><tbody>
+<tr><td>Customer</td><td>FirstName, LastName, Email</td><td>PII</td><td>None detected — no encryption-at-rest, field-level masking, or access controls configured in application code</td></tr>
+<tr><td>Account</td><td>Balance, AvailableBalance, AccountNumber</td><td>PCI-adjacent (financial account data)</td><td>None detected — data transmitted and stored in plaintext; database connection uses <code>TrustServerCertificate=true</code> which bypasses TLS certificate validation</td></tr>
+<tr><td>Transaction</td><td>Amount, Description, ReferenceNumber</td><td>PCI-adjacent (financial transaction data)</td><td>None detected — no masking or encryption configured</td></tr>
+</tbody></table></div>
+<p>&gt; <strong>Note:</strong> The <code>web.config</code> contains a hardcoded <code>machineKey</code> (validationKey and decryptionKey) and plaintext database credentials (<code>User Id=sa;Password=Zava123!</code>). These represent high-severity security risks: the machine key enables forms-auth cookie forgery and the SA password exposes full database administrative access. See <code>configuration-inventory.md</code> for the full property inventory.</p>
+</div>
+</div>
+<p class="footer">Your feedback is invaluable &mdash; <a href="https://aka.ms/ghcp-appmod/feedback">Share feedback</a></p>
+<script>
+function toggleRow(rowId, triggerRow) {
+  var detail = document.getElementById(rowId);
+  var btn = document.getElementById('btn-' + rowId);
+  if (!detail) return;
+  var visible = detail.style.display !== 'none';
+  detail.style.display = visible ? 'none' : 'table-row';
+  if (btn) btn.classList.toggle('open', !visible);
+}
+(function() {
+  var nav = document.querySelector('.tab-nav');
+  if (!nav) return;
+  nav.addEventListener('click', function(e) {
+    var btn = e.target.closest('.tab-btn');
+    if (!btn) return;
+    var targetId = btn.getAttribute('data-tab');
+    document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+    btn.classList.add('active');
+    var panel = document.getElementById(targetId);
+    if (panel) {
+      panel.classList.add('active');
+      // Render any mermaid diagrams in this panel that haven't been processed yet
+      if (window.__mermaidReady) { window.__renderMermaidIn(panel); }
+    }
+  });
+})();
+
+// ── Diagram lightbox ────────────────────────────────────────
+(function() {
+  var lightbox = document.getElementById('diagram-lightbox');
+  var inner = document.getElementById('diagram-lightbox-inner');
+  var closeBtn = document.getElementById('diagram-lightbox-close');
+  if (!lightbox || !inner || !closeBtn) return;
+
+  var scale = 1;
+  var translateX = 0;
+  var translateY = 0;
+  var isDragging = false;
+  var dragStartX = 0;
+  var dragStartY = 0;
+
+  function applyTransform() {
+    var svg = inner.querySelector('svg');
+    if (svg) {
+      svg.style.transform = 'translate(' + translateX + 'px, ' + translateY + 'px) scale(' + scale + ')';
+      svg.style.transformOrigin = 'center center';
+      svg.style.transition = 'none';
+    }
+  }
+
+  function resetTransform() {
+    scale = 1; translateX = 0; translateY = 0;
+    applyTransform();
+  }
+
+  function openLightbox(svgEl) {
+    inner.innerHTML = svgEl.outerHTML;
+    var injected = inner.querySelector('svg');
+    if (injected) {
+      injected.removeAttribute('width');
+      injected.removeAttribute('height');
+      injected.style.cursor = 'grab';
+    }
+    resetTransform();
+    lightbox.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove('open');
+    inner.innerHTML = '';
+    document.body.style.overflow = '';
+    resetTransform();
+  }
+
+  inner.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    var delta = e.deltaY > 0 ? 0.9 : 1.1;
+    scale = Math.min(Math.max(scale * delta, 0.3), 8);
+    applyTransform();
+  }, { passive: false });
+
+  inner.addEventListener('mousedown', function(e) {
+    if (e.button !== 0) return;
+    isDragging = true;
+    dragStartX = e.clientX - translateX;
+    dragStartY = e.clientY - translateY;
+    var svg = inner.querySelector('svg');
+    if (svg) { svg.style.cursor = 'grabbing'; }
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', function(e) {
+    if (!isDragging) return;
+    translateX = e.clientX - dragStartX;
+    translateY = e.clientY - dragStartY;
+    applyTransform();
+  });
+
+  document.addEventListener('mouseup', function() {
+    if (!isDragging) return;
+    isDragging = false;
+    var svg = inner.querySelector('svg');
+    if (svg) { svg.style.cursor = 'grab'; }
+  });
+
+  inner.addEventListener('dblclick', function() { resetTransform(); });
+
+  document.addEventListener('click', function(e) {
+    var card = e.target.closest('.mermaid');
+    if (!card) return;
+    if (e.target.closest('.diagram-lightbox-close')) return;
+    var svg = card.querySelector('svg');
+    if (svg) { openLightbox(svg); }
+  });
+
+  closeBtn.addEventListener('click', closeLightbox);
+
+  lightbox.addEventListener('click', function(e) {
+    if (e.target === lightbox) { closeLightbox(); }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { closeLightbox(); }
+  });
+})();
+
+var _currentTarget = '';
+
+function toggleMultiSelect(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  // Close others
+  document.querySelectorAll('.multi-select.open').forEach(function(ms) { if (ms.id !== id) ms.classList.remove('open'); });
+  el.classList.toggle('open');
+}
+
+// Close dropdowns on outside click
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.multi-select')) {
+    document.querySelectorAll('.multi-select.open').forEach(function(ms) { ms.classList.remove('open'); });
+  }
+});
+
+function getMultiSelectValues(msId) {
+  var el = document.getElementById(msId);
+  if (!el) return [];
+  var checked = el.querySelectorAll('input[type=checkbox]:checked');
+  var vals = [];
+  for (var i = 0; i < checked.length; i++) vals.push(checked[i].value);
+  return vals;
+}
+
+function onMultiSelectChange(msId, label) {
+  var el = document.getElementById(msId);
+  if (!el) return;
+  var vals = getMultiSelectValues(msId);
+  var total = el.querySelectorAll('input[type=checkbox]').length;
+  var btn = el.querySelector('.multi-select-btn');
+  if (btn) {
+    btn.textContent = vals.length > 0 && vals.length < total ? label + ' (' + vals.length + ')' : label;
+  }
+  applyFilters();
+}
+
+function applyFilters() {
+  var selectedDomains = getMultiSelectValues('domain-ms');
+  var selectedCrits = getMultiSelectValues('criticality-ms');
+
+  // Domain filter: show/hide entire sections (empty = show all)
+  var sections = document.querySelectorAll('.issue-section');
+  for (var i = 0; i < sections.length; i++) {
+    var domain = sections[i].getAttribute('data-domain');
+    sections[i].style.display = (selectedDomains.length === 0 || selectedDomains.indexOf(domain) >= 0) ? '' : 'none';
+  }
+
+  // Row-level filtering: respect target + criticality
+  var rows = document.querySelectorAll('.issue-row');
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    var section = row.closest('.issue-section');
+    if (section && section.style.display === 'none') {
+      row.style.display = 'none';
+      var next = row.nextElementSibling;
+      if (next && next.classList.contains('detail-row')) next.style.display = 'none';
+      continue;
+    }
+
+    // Check target filter
+    var show = true;
+    if (_currentTarget && row.hasAttribute('data-targets')) {
+      var targetsStr = row.getAttribute('data-targets');
+      if (targetsStr && targetsStr !== '{}') {
+        try {
+          var targets = JSON.parse(targetsStr);
+          if (Object.keys(targets).length > 0 && !targets[_currentTarget]) {
+            show = false;
+          }
+        } catch(e) {}
+      }
+    }
+
+    // Check criticality filter
+    if (show && selectedCrits.length > 0) {
+      var crit = row.getAttribute('data-criticality');
+      if (selectedCrits.indexOf(crit) < 0) show = false;
+    }
+
+    row.style.display = show ? '' : 'none';
+    var nextRow = row.nextElementSibling;
+    if (nextRow && nextRow.classList.contains('detail-row')) {
+      if (!show) nextRow.style.display = 'none';
+    }
+  }
+}
+
+function clearAllFilters() {
+  document.querySelectorAll('.multi-select input[type=checkbox]').forEach(function(cb) { cb.checked = false; });
+  var domainBtn = document.querySelector('#domain-ms .multi-select-btn');
+  if (domainBtn) domainBtn.textContent = 'Domain';
+  var critBtn = document.querySelector('#criticality-ms .multi-select-btn');
+  if (critBtn) critBtn.textContent = 'Criticality';
+  applyFilters();
+}
+
+function onTargetChange(targetId) {
+  _currentTarget = targetId;
+  var rows = document.querySelectorAll('.issue-row[data-targets]');
+  var totalEffort = 0;
+  var domainCrits = {}; // domain -> {mandatory:0, potential:0, optional:0}
+
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    var targets = JSON.parse(row.getAttribute('data-targets'));
+    var section = row.closest('.issue-section');
+    var domain = section ? section.getAttribute('data-domain') : '';
+
+    if (!targets || Object.keys(targets).length === 0) {
+      // No target data (e.g. security) — always show
+      var sp = parseFloat(row.querySelector('.sp-cell').textContent) || 0;
+      totalEffort += sp;
+      if (!domainCrits[domain]) domainCrits[domain] = {mandatory:0,potential:0,optional:0};
+      var crit = row.getAttribute('data-criticality') || 'optional';
+      domainCrits[domain][crit] = (domainCrits[domain][crit] || 0) + 1;
+      continue;
+    }
+
+    var override = targets[targetId];
+    if (!override) {
+      // Issue doesn't apply to this target
+      continue;
+    }
+
+    // Apply severity override
+    var newSeverity = (override.severity || row.getAttribute('data-default-severity') || '').toLowerCase();
+    row.setAttribute('data-criticality', newSeverity);
+    var critCell = row.querySelector('.crit-cell');
+    if (critCell) {
+      var critText = newSeverity === 'mandatory' ? 'Mandatory' : newSeverity === 'potential' ? 'Potential' : 'Optional';
+      var cssClass = newSeverity === 'mandatory' ? 'crit-square-mandatory' : newSeverity === 'potential' ? 'crit-square-potential' : 'crit-square-optional';
+      critCell.innerHTML = '<span class="crit-label"><span class="crit-square ' + cssClass + '"></span>' + critText + '</span>';
+    }
+
+    // Apply effort override
+    var newEffort = override.effort !== undefined ? override.effort : parseFloat(row.getAttribute('data-default-effort')) || 0;
+    var spCell = row.querySelector('.sp-cell');
+    if (spCell) spCell.textContent = newEffort;
+    totalEffort += newEffort;
+
+    if (!domainCrits[domain]) domainCrits[domain] = {mandatory:0,potential:0,optional:0};
+    domainCrits[domain][newSeverity] = (domainCrits[domain][newSeverity] || 0) + 1;
+  }
+
+  // Also add security findings effort (they don't have per-target data)
+  var secSection = document.querySelector('.issue-section[data-domain="security"]');
+  if (secSection) {
+    var secRows = secSection.querySelectorAll('.issue-row');
+    for (var j = 0; j < secRows.length; j++) {
+      if (!secRows[j].hasAttribute('data-targets') || secRows[j].getAttribute('data-targets') === '') {
+        var sp = parseFloat(secRows[j].querySelector('.sp-cell').textContent) || 0;
+        totalEffort += sp;
+        if (!domainCrits['security']) domainCrits['security'] = {mandatory:0,potential:0,optional:0};
+        var sc = secRows[j].getAttribute('data-criticality') || 'optional';
+        domainCrits['security'][sc] = (domainCrits['security'][sc] || 0) + 1;
+      }
+    }
+  }
+
+  // Update effort display
+  var label = totalEffort < 20 ? 'S' : totalEffort < 50 ? 'M' : totalEffort < 100 ? 'L' : 'XL';
+  var effortEl = document.getElementById('effort-display');
+  if (effortEl) effortEl.textContent = label + ' (total story points: ' + totalEffort + ')';
+
+  // Update donut charts
+  updateDonuts(domainCrits);
+
+  // Re-apply domain/criticality filters
+  applyFilters();
+}
+
+function updateDonuts(domainCrits) {
+  var container = document.getElementById('donut-container');
+  if (!container) return;
+  container.innerHTML = '';
+  var domainNames = {'cloud-readiness':'Cloud Readiness','java-upgrade':'Java Upgrade','dotnet-upgrade':'DotNET Upgrade','security':'Security'};
+  var domainOrder = ['cloud-readiness','java-upgrade','dotnet-upgrade','security'];
+  for (var d = 0; d < domainOrder.length; d++) {
+    var key = domainOrder[d];
+    var c = domainCrits[key];
+    if (!c || (c.mandatory + c.potential + c.optional) === 0) continue;
+    var total = c.mandatory + c.potential + c.optional;
+    var div = document.createElement('div');
+    div.className = 'domain-summary-item';
+    div.innerHTML = buildDonutSvg(c.mandatory, c.potential, c.optional) +
+      '<h3>' + domainNames[key] + '</h3>' +
+      '<div class="count">' + total + ' issue' + (total !== 1 ? 's' : '') + '</div>';
+    container.appendChild(div);
+  }
+}
+
+function buildDonutSvg(m, p, o) {
+  var total = m + p + o;
+  if (total === 0) return '<svg viewBox="0 0 100 100" width="100" height="100" style="display:block;margin:0 auto;"><circle cx="50" cy="50" r="35" fill="none" stroke="#d0d7de" stroke-width="15" opacity="0.5"/></svg>';
+  var r = 35, circ = 2 * Math.PI * r, offset = 0;
+  var svg = '<svg viewBox="0 0 100 100" width="100" height="100" style="display:block;margin:0 auto;transform:rotate(-90deg);">';
+  var segs = [{c:m,color:'var(--color-mandatory)'},{c:p,color:'var(--color-potential)'},{c:o,color:'var(--color-optional)'}];
+  for (var i = 0; i < segs.length; i++) {
+    if (segs[i].c === 0) continue;
+    var segLen = (segs[i].c / total) * circ;
+    var gap = total > segs[i].c ? 1.5 : 0;
+    var drawLen = Math.max(segLen - gap, 0.5);
+    svg += '<circle cx="50" cy="50" r="' + r + '" fill="none" stroke="' + segs[i].color + '" stroke-width="15" stroke-dasharray="' + drawLen.toFixed(2) + ' ' + circ.toFixed(2) + '" stroke-dashoffset="' + (-offset).toFixed(2) + '"/>';
+    offset += segLen;
+  }
+  svg += '</svg>';
+  return svg;
+}
+</script>
+<script>document.addEventListener('DOMContentLoaded', function() { onTargetChange('AppService.Windows'); });</script>
+</div></body></html>
