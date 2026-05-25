@@ -8,10 +8,13 @@
   "base_commit": "2b2f469888f45ae2a336808f84791db21bfa5aa9",
   "apps": {
     "9414b619-6a70-4668-9898-9cf225c7a6ed": {
-      "status": "pending"
+      "status": "running",
+      "pull_request": "https://github.com/zhoufenqin/ZavaAccountManager/pull/17",
+      "session_url": "https://github.com/zhoufenqin/ZavaAccountManager/pull/17/agent-sessions/f3c734d0-5cec-4ea5-8b3d-3a611ecd2105",
+      "job_id": "8765864-1244187760-df803d2c-76ea-4a2a-9877-7e802079310a"
     },
     "19e6a49c-3ca4-40cb-802d-155d42b49c96": {
-      "status": "pending"
+      "status": "running"
     }
   }
 }
