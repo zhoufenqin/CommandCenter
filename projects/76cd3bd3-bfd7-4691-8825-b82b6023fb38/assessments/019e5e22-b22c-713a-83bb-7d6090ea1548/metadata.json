@@ -14,7 +14,10 @@
       "job_id": "8765864-1112811296-3e0a2286-a76a-4f0e-9bd2-e92e0f30b79f"
     },
     "9414b619-6a70-4668-9898-9cf225c7a6ed": {
-      "status": "running"
+      "status": "running",
+      "pull_request": "https://github.com/zhoufenqin/ZavaAccountManager/pull/16",
+      "session_url": "https://github.com/zhoufenqin/ZavaAccountManager/pull/16/agent-sessions/7270b671-0b67-48ec-aa6c-02f82e392b91",
+      "job_id": "8765864-1244187760-b6b23e97-4db7-4f45-b37a-f7e5674ccd9a"
     }
   }
 }
