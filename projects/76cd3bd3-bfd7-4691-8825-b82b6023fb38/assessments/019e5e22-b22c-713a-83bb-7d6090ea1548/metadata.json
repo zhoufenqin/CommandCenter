@@ -8,10 +8,13 @@
   "base_commit": "d40439748adfa36acb25755520ef054548050420",
   "apps": {
     "19e6a49c-3ca4-40cb-802d-155d42b49c96": {
-      "status": "pending"
+      "status": "running",
+      "pull_request": "https://github.com/zhoufenqin/PhotoAlbum-java/pull/4",
+      "session_url": "https://github.com/zhoufenqin/PhotoAlbum-java/pull/4/agent-sessions/cae3ed1a-7a06-4d78-84dc-478e08c95e33",
+      "job_id": "8765864-1112811296-3e0a2286-a76a-4f0e-9bd2-e92e0f30b79f"
     },
     "9414b619-6a70-4668-9898-9cf225c7a6ed": {
-      "status": "pending"
+      "status": "running"
     }
   }
 }
