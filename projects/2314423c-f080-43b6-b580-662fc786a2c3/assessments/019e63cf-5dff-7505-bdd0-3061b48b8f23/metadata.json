@@ -1,14 +1,16 @@
 {
   "name": "Assessment May 26, 2026 06:23 PM",
   "execution_mode": "cca",
-  "status": "running",
+  "status": "failed",
   "target": "Any",
   "domain": "cloud-readiness",
   "created_at": "2026-05-26T10:23:15.0699130\u002B00:00",
+  "completed_at": "2026-05-26T10:23:45.3366946\u002B00:00",
   "base_commit": "46fe2732fa8a7ff4185c9b87c1fea45261613cf0",
   "apps": {
     "1f8b43c8-f2f9-43c5-9644-7a23aed7fb8f": {
-      "status": "pending"
+      "status": "failed",
+      "error": "CCA submission produced no job_id; cloud delegation may have failed."
     }
   }
 }
