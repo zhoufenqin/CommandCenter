@@ -1,0 +1,10 @@
+{
+  "name": "eShopLegacyNTier",
+  "language": "dotnet",
+  "created_at": "2026-05-26T09:37:52.7010211\u002B00:00",
+  "source": {
+    "provider": "github",
+    "host": "github.com",
+    "repo": "zhoufenqin/eShopLegacyNTier"
+  }
+}
