@@ -1,14 +1,15 @@
 {
   "name": "Assessment May 27, 2026 04:05 PM",
   "execution_mode": "local",
-  "status": "running",
+  "status": "completed",
   "target": "net10.0",
   "domain": "upgrade,cloud-readiness",
   "created_at": "2026-05-27T08:05:50.9678156\u002B00:00",
+  "completed_at": "2026-05-27T08:07:32.6140574\u002B00:00",
   "base_commit": "89ac1228d30bcb7d3769f1a2a4dd3cb24ecbe086",
   "apps": {
     "1f8b43c8-f2f9-43c5-9644-7a23aed7fb8f": {
-      "status": "pending"
+      "status": "completed"
     }
   }
 }
