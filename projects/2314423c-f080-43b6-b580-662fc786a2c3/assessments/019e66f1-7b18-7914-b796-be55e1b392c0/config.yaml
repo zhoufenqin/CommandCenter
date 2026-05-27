@@ -1,0 +1,7 @@
+analysisCoverage: full
+dotnet:
+  assessmentDomains:
+  - cloud-readiness
+  targetComputeServices:
+  - Any
+  minimumCveSeverity: high
