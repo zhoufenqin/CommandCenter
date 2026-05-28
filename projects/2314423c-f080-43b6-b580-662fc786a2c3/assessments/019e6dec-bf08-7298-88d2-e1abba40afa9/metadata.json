@@ -1,14 +1,15 @@
 {
   "name": "Assessment May 28, 2026 05:31 PM",
   "execution_mode": "local",
-  "status": "running",
+  "status": "completed",
   "target": "\u2014",
   "domain": "dependency-upgrade",
   "created_at": "2026-05-28T09:31:32.7963328\u002B00:00",
+  "completed_at": "2026-05-28T09:31:40.1602232\u002B00:00",
   "base_commit": "f0eed171eed5257b736dd2a256023ba83254cb8d",
   "apps": {
     "fc4b9ee5-9d63-4ee0-9ecf-a253f3014686": {
-      "status": "pending"
+      "status": "completed"
     }
   }
 }
