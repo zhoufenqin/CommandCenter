@@ -8,10 +8,13 @@
   "base_commit": "f5588fd1f956b5062fbaf970706e02b90db8b9ba",
   "apps": {
     "1f8b43c8-f2f9-43c5-9644-7a23aed7fb8f": {
-      "status": "pending"
+      "status": "running",
+      "pull_request": "https://github.com/zhoufenqin/eShopLegacyNTier/pull/48",
+      "session_url": "https://github.com/zhoufenqin/eShopLegacyNTier/pull/48/agent-sessions/a2711f9c-620d-4927-8674-413d6608dcad",
+      "job_id": "8765864-1166212471-56ae3565-7292-486d-9c36-c3dec9b4b813"
     },
     "fc4b9ee5-9d63-4ee0-9ecf-a253f3014686": {
-      "status": "pending"
+      "status": "running"
     }
   }
 }
