@@ -1,0 +1,10 @@
+{
+  "name": "airsonic2",
+  "language": "java",
+  "created_at": "2026-06-01T07:50:40.3863287Z",
+  "source": {
+    "provider": "github",
+    "host": "github.com",
+    "repo": "zhoufenqin/airsonic-advanced"
+  }
+}
