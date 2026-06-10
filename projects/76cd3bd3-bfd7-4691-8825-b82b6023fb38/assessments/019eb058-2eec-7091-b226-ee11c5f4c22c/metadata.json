@@ -1,14 +1,15 @@
 {
   "name": "Assessment Jun 10, 2026 03:03 PM",
   "execution_mode": "local",
-  "status": "running",
+  "status": "completed",
   "target": "AppService.Windows",
   "domain": "cloud-readiness",
   "created_at": "2026-06-10T07:03:49.8351676Z",
+  "completed_at": "2026-06-10T07:04:12.1453428Z",
   "base_commit": "67090579adbc8f407f10b3275313ced7f14743c5",
   "apps": {
     "9414b619-6a70-4668-9898-9cf225c7a6ed": {
-      "status": "pending"
+      "status": "completed"
     }
   }
 }
