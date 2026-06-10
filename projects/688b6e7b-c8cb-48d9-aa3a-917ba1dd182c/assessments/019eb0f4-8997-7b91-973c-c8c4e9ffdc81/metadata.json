@@ -1,0 +1,15 @@
+{
+  "name": "Export Test Q3 assessment",
+  "execution_mode": "local",
+  "status": "completed",
+  "target": "",
+  "domain": "",
+  "created_at": "2026-06-10T09:54:36.5670628Z",
+  "completed_at": "2026-06-10T09:54:36.5670628Z",
+  "base_commit": "03e4ff4f443c8ce024f563ccc3199deff332ced8",
+  "apps": {
+    "fc4b9ee5-9d63-4ee0-9ecf-a253f3014686": {
+      "status": "completed"
+    }
+  }
+}
