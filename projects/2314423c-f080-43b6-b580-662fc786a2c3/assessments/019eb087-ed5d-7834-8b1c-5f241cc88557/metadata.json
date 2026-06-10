@@ -1,0 +1,14 @@
+{
+  "name": "Assessment Jun 10, 2026 03:55 PM",
+  "execution_mode": "cca",
+  "status": "running",
+  "target": "Any",
+  "domain": "cloud-readiness",
+  "created_at": "2026-06-10T07:55:58.9764989Z",
+  "base_commit": "b8a796704f681c4e2c62b30ccf81fb75a658aa03",
+  "apps": {
+    "1f8b43c8-f2f9-43c5-9644-7a23aed7fb8f": {
+      "status": "pending"
+    }
+  }
+}
