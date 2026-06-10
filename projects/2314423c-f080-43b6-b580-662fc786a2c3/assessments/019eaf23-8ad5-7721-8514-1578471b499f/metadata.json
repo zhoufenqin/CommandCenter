@@ -1,0 +1,15 @@
+{
+  "name": "firewalltest assessment",
+  "execution_mode": "local",
+  "status": "completed",
+  "target": "",
+  "domain": "",
+  "created_at": "2026-06-10T01:26:42.6459849Z",
+  "completed_at": "2026-06-10T01:26:42.6459849Z",
+  "base_commit": "8d7a99a69bcf48e5ea325200fe29c0a95f2ad7c6",
+  "apps": {
+    "1f8b43c8-f2f9-43c5-9644-7a23aed7fb8f": {
+      "status": "completed"
+    }
+  }
+}
