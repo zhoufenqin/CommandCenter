@@ -14,7 +14,10 @@
       "job_id": "8765864-1166212471-a328b021-7110-4fd4-81e4-5265f0a5f970"
     },
     "fc4b9ee5-9d63-4ee0-9ecf-a253f3014686": {
-      "status": "running"
+      "status": "running",
+      "pull_request": "https://github.com/zhoufenqin/copilot-api/pull/3",
+      "session_url": "https://github.com/zhoufenqin/copilot-api/pull/3/agent-sessions/ac787fb9-18db-4af4-bbd9-8f5257761ac3",
+      "job_id": "8765864-1252186270-cefc0a32-5dae-4d59-9e25-ef4169beda0e"
     }
   }
 }
