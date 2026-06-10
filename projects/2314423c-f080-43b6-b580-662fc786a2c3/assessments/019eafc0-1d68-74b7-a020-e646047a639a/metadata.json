@@ -1,20 +1,21 @@
 {
   "name": "Assessment Jun 10, 2026 12:17 PM",
   "execution_mode": "cca",
-  "status": "running",
+  "status": "completed",
   "target": "net10.0",
   "domain": "upgrade,cloud-readiness",
   "created_at": "2026-06-10T04:17:43.8791149Z",
+  "completed_at": "2026-06-10T04:23:36.3737673Z",
   "base_commit": "0c2e0114d1e73b80de69d1934e0e9407ce857de9",
   "apps": {
     "1f8b43c8-f2f9-43c5-9644-7a23aed7fb8f": {
-      "status": "running",
+      "status": "completed",
       "pull_request": "https://github.com/zhoufenqin/eShopLegacyNTier/pull/49",
       "session_url": "https://github.com/zhoufenqin/eShopLegacyNTier/pull/49/agent-sessions/24ed0b60-65b6-4d04-ab32-9bb3270eff19",
       "job_id": "8765864-1166212471-a328b021-7110-4fd4-81e4-5265f0a5f970"
     },
     "fc4b9ee5-9d63-4ee0-9ecf-a253f3014686": {
-      "status": "running",
+      "status": "completed",
       "pull_request": "https://github.com/zhoufenqin/copilot-api/pull/3",
       "session_url": "https://github.com/zhoufenqin/copilot-api/pull/3/agent-sessions/ac787fb9-18db-4af4-bbd9-8f5257761ac3",
       "job_id": "8765864-1252186270-cefc0a32-5dae-4d59-9e25-ef4169beda0e"
