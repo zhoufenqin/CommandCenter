@@ -1,17 +1,19 @@
 {
   "name": "Assessment Jun 10, 2026 12:37 PM",
   "execution_mode": "cca",
-  "status": "running",
+  "status": "failed",
   "target": "net10.0",
   "domain": "upgrade,cloud-readiness",
   "created_at": "2026-06-10T04:38:05.0295855Z",
+  "completed_at": "2026-06-10T04:46:32.5180861Z",
   "base_commit": "df920a0c22ae7e384bed7549624fb9a275cf61af",
   "apps": {
     "1f8b43c8-f2f9-43c5-9644-7a23aed7fb8f": {
-      "status": "running",
+      "status": "failed",
       "pull_request": "https://github.com/zhoufenqin/eShopLegacyNTier/pull/50",
       "session_url": "https://github.com/zhoufenqin/eShopLegacyNTier/pull/50/agent-sessions/5ab2c2db-8076-4980-b605-917e38803d5f",
-      "job_id": "8765864-1166212471-2269b512-212e-42f7-91da-72342176e4fe"
+      "job_id": "8765864-1166212471-2269b512-212e-42f7-91da-72342176e4fe",
+      "error": "failed"
     }
   }
 }
