@@ -1,0 +1,21 @@
+{
+  "name": "firewalltest assessment",
+  "execution_mode": "local",
+  "status": "completed",
+  "target": "",
+  "domain": "upgrade,cloud-readiness",
+  "created_at": "2026-06-11T03:32:34.2334402Z",
+  "completed_at": "2026-06-11T03:33:22.5242658Z",
+  "base_commit": "ed324f4edad12a850b421cef0dd28fdfd563c726",
+  "apps": {
+    "62715c7a-114b-464a-977a-a9f98f48a54d": {
+      "status": "completed"
+    },
+    "fc4b9ee5-9d63-4ee0-9ecf-a253f3014686": {
+      "status": "completed"
+    },
+    "1f8b43c8-f2f9-43c5-9644-7a23aed7fb8f": {
+      "status": "completed"
+    }
+  }
+}
